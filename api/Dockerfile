@@ -2,7 +2,6 @@ FROM msaraiva/elixir-dev
 
 WORKDIR .
 ADD . .
-
 RUN mix deps.get
 RUN mix compile
 

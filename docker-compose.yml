@@ -7,6 +7,8 @@ services:
     - "5000:9051"
     volumes:
     - apilog:/var/log
+    environment:
+    - MIND_DGRAPH_URL=http://mind-db:8080
     links:
     - mind-db
   mind-db:
@@ -14,7 +16,6 @@ services:
     entrypoint: dgraph
     ports:
     - "8080:8080"
-    - "8081:8081"
     image: dgraph/dgraph
     volumes:
     - datavolume:/data

@@ -1,5 +1,6 @@
 defmodule Dgraph do
     use HTTPoison.Base
+    @success_code "ErrorOk"
 
     def process_url(url) do
         Application.get_env(:api, :dgraph_url) <> url
@@ -8,12 +9,11 @@ defmodule Dgraph do
     def process_response_body(body) do
         body |> Poison.decode!
     end
-
+ 
     def mutate() do
-        {:ok, %HTTPoison.Response{body: %{"code" => "ErrorOk"}}} = post("/query", """
+        {:ok, %HTTPoison.Response{body: %{"code" => @success_code}}} = post("/query", """
         mutation {
             set {
-                <self> <type> <being> .
                 <idea> <type> <concept> .
                 <idea> <label> "Idea" .
                 <self> <has.concept> <idea-1> .
