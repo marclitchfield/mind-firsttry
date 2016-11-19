@@ -8,7 +8,7 @@ defmodule Api do
     children = [
       Plug.Adapters.Cowboy.child_spec(:http, MindRouter, [], [port: port])
     ]
-
+ 
     opts = [strategy: :one_for_one, name: Api.Supervisor]
     Supervisor.start_link(children, opts)
   end

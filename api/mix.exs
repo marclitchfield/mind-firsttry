@@ -11,13 +11,15 @@ defmodule Api.Mixfile do
   end
 
   def application do
-    [applications: [:cowboy, :logger, :plug],
+    [applications: [:cowboy, :logger, :plug, :httpoison],
      mod: {Api, []},
      env: [cowboy_port: 5000]]
   end
 
   defp deps do
   [{:cowboy, "~> 1.0.4"},
+   {:httpoison, "~> 0.10.0"},
+   {:poison, "~> 3.0"},
    {:plug, "~> 1.2.2"}]
   end
 end
