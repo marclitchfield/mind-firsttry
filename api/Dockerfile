@@ -1,13 +1,11 @@
-FROM golang:1.7.3 
+FROM msaraiva/elixir-dev
 
-ADD . /app 
+WORKDIR .
+ADD . .
 
-WORKDIR /app/src
+RUN mix deps.get
+RUN mix compile
 
-RUN go get -v -d
-RUN go build -o bin/main .
+ENV PORT 5000
 
-EXPOSE 8080
-
-ENTRYPOINT bin/main
- 
+ENTRYPOINT mix run --no-halt
