@@ -11,14 +11,12 @@ services:
     - mind-db
   mind-db:
     container_name: mind-db
+    entrypoint: dgraph
     ports:
-    - "7474:7474"
-    - "7687:7687"  
-    image: neo4j
+    - "8080:8080"
+    image: dgraph/dgraph
     volumes:
-    - datavolume:$HOME/neo4j/data
-    environment:
-    - NEO4J_AUTH=none
+    - datavolume:/data
 volumes:
   apilog: {}
   datavolume: {}
