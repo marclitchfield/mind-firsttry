@@ -14,6 +14,7 @@ defmodule Dgraph do
         "<#{subject}> <#{predicate}> " <> quad_object(object)
     end
 
+    # TODO: scrub inputs
     def quad_object([node: name]), do: "<#{name}>"
     def quad_object([text: text]), do: "\"#{text}\""
 
