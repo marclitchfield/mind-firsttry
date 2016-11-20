@@ -31,18 +31,23 @@ curl localhost:9051/init -XPOST -H "Content-Type: application/json"
 ```
 
 **Post an idea**
+
 (note: functionality specific to ideas will likely move into a facet api)
 ```
 curl localhost:9051/ideas -XPOST -H "Content-Type: application/json" -d '{ "body": "I think" }'
 ```
 It outputs the xid generated for the idea, e.g. ```f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1```
 
+
 **Post a related idea**
+
 ```
 curl localhost:9051/ideas -XPOST -H "Content-Type: application/json" -d '{ "subject": "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1", "predicate": "therefore", "body": "I am" }'
 ```
 
+
 **Get an idea with predicates**
+
 ```
 curl -g "localhost:9051/idea/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1?p[]=therefore"
 ```
@@ -56,7 +61,9 @@ curl -g "localhost:9051/idea/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1?p[]=therefore"
 }
 ```
 
+
 **Get all ideas linked to self**
+
 ```
 curl localhost:9051/ideas
 ```
