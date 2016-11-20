@@ -20,6 +20,7 @@ defmodule Api.Mixfile do
   [{:cowboy, "~> 1.0.4"},
    {:httpoison, "~> 0.10.0"},
    {:poison, "~> 3.0"},
-   {:plug, "~> 1.2.2"}]
+   {:plug, "~> 1.2.2"},
+   {:uuid, "~> 1.1"}]
   end
 end
