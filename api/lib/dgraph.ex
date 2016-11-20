@@ -19,7 +19,7 @@ defmodule Dgraph do
     def quad_object([text: text]), do: "\"#{text}\""
 
     def mutate(quads) do
-        query = "mutation { set { " <> Enum.join(quads, " . \n") <> " . } }"
+        query = "mutation { set { " <> Enum.join(quads, " .\n") <> " . } }"
         IO.puts(query)
         {:ok, %HTTPoison.Response{body: %{"code" => @success_code}}} = post("/query", query)
         :ok
@@ -29,6 +29,20 @@ defmodule Dgraph do
         query = "{ me(_xid_: #{xid}) { #{terms} } }"
         IO.puts(query)
         {:ok, %HTTPoison.Response{body: body}} = post("/query", query)
-        body
+        {:ok, body}
     end
+
+    def query_nodes(source, properties, predicates, child_predicates) do
+        query(source, map_predicates(properties, predicates, child_predicates))
+    end
+    
+    # TODO: scrub inputs
+    def map_predicates(_properties, nil, _), do: ""
+    def map_predicates(properties, predicates, child_predicates) do
+        props = properties |> Enum.join(" ")
+        predicates
+        |> Enum.map(fn(pred) -> "#{props} #{pred} { #{props} #{map_predicates(properties, child_predicates, [])} }" end) 
+        |> Enum.join(" ")  
+    end
+
 end

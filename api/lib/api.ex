@@ -10,6 +10,10 @@ defmodule Api do
     ]
  
     opts = [strategy: :one_for_one, name: Api.Supervisor]
-    Supervisor.start_link(children, opts)
+    response = Supervisor.start_link(children, opts)
+
+    IO.puts("Listening on port #{port} ...")
+    response
   end
+
 end
