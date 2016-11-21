@@ -48,11 +48,11 @@ defmodule ApiTest do
   end
 
   defp post_node() do
-    call_post("/nodes/rel", [type: @test_node_type, body: @test_body])
+    call_post("/nodes/rel", [is: @test_node_type, body: @test_body])
   end
 
   defp post_node(id) do
-    call_post("/nodes/rel", [type: @test_node_type, body: @test_body, subject: id, predicate: @test_predicate])
+    call_post("/nodes/rel", [is: @test_node_type, body: @test_body, subject: id, predicate: @test_predicate])
   end
 
   defp get_node(id) do

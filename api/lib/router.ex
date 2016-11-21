@@ -20,7 +20,7 @@ defmodule MindRouter do
   end
 
   post "/nodes/:predicate" do
-    {type, body} = {conn.params["type"], conn.params["body"]}
+    {type, body} = {conn.params["is"], conn.params["body"]}
     case MindRepo.new_node(:self, predicate, type, body) do
       {:ok, id} -> MindRepo.link_nodes(conn.params["subject"], conn.params["predicate"], id)
         send_resp(conn, 200, id)
@@ -29,8 +29,8 @@ defmodule MindRouter do
     end
   end
 
-  delete "/node/:id/:rel/:object" do
-    :ok = MindRepo.delete_link(id, rel, object)
+  delete "/node/:subject/:predicate/:object" do
+    :ok = MindRepo.delete_link(subject, predicate, object)
     send_resp(conn, 200, "deleted")
   end
 

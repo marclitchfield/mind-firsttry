@@ -14,7 +14,7 @@ defmodule MindRepo do
         :ok = Dgraph.mutate([
           Dgraph.quad(subject, predicate, [node: id]),
           Dgraph.quad(id, :body, [text: body]),
-          Dgraph.quad(id, :type, [node: type]) 
+          Dgraph.quad(id, :is, [node: type]) 
         ])
         {:ok, id}
       false -> {:error, :invalid_type, type}
@@ -37,7 +37,7 @@ defmodule MindRepo do
 
   def initialize() do
     types = @types |> Enum.map(fn({type, label}) -> Dgraph.quad(type, :label, [text: label]) end)
-    self = Dgraph.quad(:self, :type, [node: :person])
+    self = Dgraph.quad(:self, :is, [node: :person])
     :ok = Dgraph.mutate(types ++ [self])
   end
 

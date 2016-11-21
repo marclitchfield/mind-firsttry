@@ -38,7 +38,10 @@ curl localhost:9051/init -XPOST -H "Content-Type: application/json"
 **Post an idea**
 
 ```
-curl localhost:9051/nodes/idea -XPOST -H "Content-Type: application/json" -d '{ "type": "concept", "body": "I think" }'
+curl localhost:9051/nodes/idea -XPOST -H "Content-Type: application/json" -d '{ 
+  "is": "concept", 
+  "body": "I think" 
+}'
 ```
 It outputs the xid generated for the idea, e.g. ```f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1```
 
@@ -49,7 +52,7 @@ It outputs the xid generated for the idea, e.g. ```f729e7bf-e7d2-4ea6-a3b5-dc815
 curl localhost:9051/nodes/idea -XPOST -H "Content-Type: application/json" -d '{ 
   "subject": "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1", 
   "predicate": "therefore", 
-  "type": "concept",
+  "is": "concept",
   "body": "I am" 
 }'
 ```
@@ -79,10 +82,20 @@ curl localhost:9051/nodes/idea
 ```javascript
 {
   me: {
-    "has.idea": [
+    "idea": [
       { body: "I am", _xid_: "160ddbcd-ac81-4de0-b055-d01555d1a59c" },
       { body: "I think", _xid_: "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" }
     ]
   }
 }
 ```
+
+**Delete a relationship**
+To delete a relationship, send a DELETE with the subject, predicate, and object (S P O) triple to delete. 
+(note: dgraph doesn't seem to have a node deletion capability... will research more)
+
+```
+curl localhost:9051/node/self/idea/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1 -XDELETE
+```
+
+The idea should not appear in the ideas returned by ```curl localhost:9051/nodes/idea```
