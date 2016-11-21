@@ -23,6 +23,11 @@ Alternatively, start an IEx session:
 iex -S mix
 ```
 
+To run the tests, ensure the mind-db is running, and run:
+```
+mix test
+```
+
 ## Usage
 
 **Initialize the mind**
