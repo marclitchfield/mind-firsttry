@@ -35,7 +35,9 @@ mix test
 curl localhost:9051/init -XPOST -H "Content-Type: application/json"
 ```
 
-**Post an idea**
+**Post a node**
+
+To create a node, specify the relationship to 'self' in the url, and choose a valid type for the node with the 'is' predicate. 
 
 ```
 curl localhost:9051/nodes/idea -XPOST -H "Content-Type: application/json" -d '{ 
@@ -45,8 +47,17 @@ curl localhost:9051/nodes/idea -XPOST -H "Content-Type: application/json" -d '{
 ```
 It outputs the xid generated for the idea, e.g. ```f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1```
 
+Available types for the 'is' predicate:
+* space
+* concept
+* event
+* person
+* object
 
-**Post a related idea**
+
+**Post a related node**
+
+To create a node that is linked to another node, specify the subject node and the predicate that links the subject to the new node. The new node will be linked to 'self' with the relationship provided in the url.
 
 ```
 curl localhost:9051/nodes/idea -XPOST -H "Content-Type: application/json" -d '{ 
@@ -58,7 +69,25 @@ curl localhost:9051/nodes/idea -XPOST -H "Content-Type: application/json" -d '{
 ```
 
 
-**Get an idea with predicates**
+**Get a node**
+
+To retrieve a node:
+```
+curl -g "localhost:9051/node/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1?p[]=therefore"
+```
+```javascript
+{
+  me: {
+    body: "I think"
+    _xid_: "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1"
+  }
+}
+```
+
+
+**Get a node and related node by predicates**
+
+To retrieve a node and related nodes, provide a list of predicates with one or more p[] query string parameters:
 
 ```
 curl -g "localhost:9051/node/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1?p[]=therefore"
@@ -74,7 +103,9 @@ curl -g "localhost:9051/node/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1?p[]=therefore"
 ```
 
 
-**Get all ideas linked to self**
+**Get nodes linked to self**
+
+To get all nodes linked to 'self' by a predicate, provide the predicate in the url
 
 ```
 curl localhost:9051/nodes/idea
@@ -99,4 +130,4 @@ To delete a relationship, send a DELETE with the subject, predicate, and object 
 curl localhost:9051/node/self/idea/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1 -XDELETE
 ```
 
-The idea should not appear in the ideas returned by ```curl localhost:9051/nodes/idea```
+The node should not longer appear in the results from ```curl localhost:9051/nodes/idea```
