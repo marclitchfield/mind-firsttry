@@ -30,12 +30,14 @@ mix test
 
 ## Usage
 
-**Initialize the mind**
+These steps outline how to interact with the mind-api using curl
+
+### Initialize the mind
 ```
 curl localhost:9051/init -XPOST -H "Content-Type: application/json"
 ```
 
-**Post a node**
+### Post a node
 
 To create a node, specify the relationship to 'self' in the url, and choose a valid type for the node with the 'is' predicate. 
 
@@ -55,7 +57,7 @@ Available types for the 'is' predicate:
 * object
 
 
-**Post a related node**
+### Post a related node
 
 To create a node that is linked to another node, specify the subject node and the predicate that links the subject to the new node. The new node will be linked to 'self' with the relationship provided in the url.
 
@@ -69,7 +71,7 @@ curl localhost:9051/nodes/idea -XPOST -H "Content-Type: application/json" -d '{
 ```
 
 
-**Get a node**
+### Get a node
 
 To retrieve a node:
 ```
@@ -85,7 +87,7 @@ curl -g "localhost:9051/node/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1?p[]=therefore"
 ```
 
 
-**Get a node and related node by predicates**
+### Get a node and related node by predicates
 
 To retrieve a node and related nodes, provide a list of predicates with one or more p[] query string parameters:
 
@@ -103,7 +105,7 @@ curl -g "localhost:9051/node/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1?p[]=therefore"
 ```
 
 
-**Get nodes linked to self**
+### Get nodes linked to self
 
 To get all nodes linked to 'self' by a predicate, provide the predicate in the url
 
@@ -121,7 +123,7 @@ curl localhost:9051/nodes/idea
 }
 ```
 
-**Delete a relationship**
+### Delete a relationship
 
 To delete a relationship, send a DELETE with the subject, predicate, and object (S P O) triple to delete. 
 (note: dgraph doesn't seem to have a node deletion capability... will research more)
