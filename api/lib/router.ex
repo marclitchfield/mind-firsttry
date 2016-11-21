@@ -29,6 +29,11 @@ defmodule MindRouter do
     end
   end
 
+  delete "/node/:id/:rel/:object" do
+    :ok = MindRepo.delete_link(id, rel, object)
+    send_resp(conn, 200, "deleted")
+  end
+
   post "/init" do
     :ok = MindRepo.initialize()
     send_resp(conn, 200, "initialized")

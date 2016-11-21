@@ -26,7 +26,7 @@ defmodule ApiTest do
 
   test "get node by id" do
     id = post_node().resp_body
-    response = get_node(id)
+    response = get_node(id) |> to_json
     assert response["me"]["_xid_"] == id
     assert response["me"]["body"] == @test_body
   end
@@ -34,11 +34,18 @@ defmodule ApiTest do
   test "get related nodes" do
     id_subject = post_node().resp_body
     id_object = post_node(id_subject).resp_body
-    response = get_node(id_subject, [@test_predicate])
+    response = get_node(id_subject, [@test_predicate]) |> to_json
     assert response["me"]["_xid_"] == id_subject
     assert response["me"][@test_predicate]["_xid_"] == id_object
   end
 
+  test "delete relationship" do
+    id_subject = post_node().resp_body
+    id_object = post_node(id_subject).resp_body
+    delete_link(id_subject, @test_predicate, id_object)
+    response = get_node(id_subject) |> to_json
+    assert response["me"][@test_predicate] == nil
+  end
 
   defp post_node() do
     call_post("/nodes/rel", [type: @test_node_type, body: @test_body])
@@ -49,12 +56,16 @@ defmodule ApiTest do
   end
 
   defp get_node(id) do
-    call_get("/node/#{id}").resp_body |> Poison.decode!
+    call_get("/node/#{id}")
   end
 
   defp get_node(id, predicates) do
     pred_args = predicates |> Enum.map(fn p -> "p[]=#{p}" end) |> Enum.join("&")
-    call_get("/node/#{id}?#{pred_args}").resp_body |> Poison.decode!
+    call_get("/node/#{id}?#{pred_args}")
+  end
+
+  defp delete_link(subject, predicate, object) do
+    call_delete("/node/#{subject}/#{predicate}/#{object}")
   end
 
   defp call_get(url) do
@@ -65,6 +76,14 @@ defmodule ApiTest do
     conn(:post, url, payload) 
       |> put_req_header("content-type", "application/json")
       |> Router.call(@opts)
+  end
+
+  defp call_delete(url) do
+    conn(:delete, url) |> Router.call(@opts)
+  end
+
+  defp to_json(response) do
+    response.resp_body |> Poison.decode!
   end
   
 end

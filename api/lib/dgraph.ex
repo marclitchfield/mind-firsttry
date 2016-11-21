@@ -14,6 +14,10 @@ defmodule Dgraph do
         "<#{subject}> <#{predicate}> " <> quad_object(object)
     end
 
+    def query_nodes(source, properties, predicates, child_predicates) do
+        query(source, map_predicates(properties, predicates || [], child_predicates || []))
+    end
+
     def mutate(quads) do
         mutations = Enum.join(quads, " .\n")
         query = "mutation { set { #{mutations} . } }"
@@ -22,8 +26,12 @@ defmodule Dgraph do
         :ok
     end
 
-    def query_nodes(source, properties, predicates, child_predicates) do
-        query(source, map_predicates(properties, predicates || [], child_predicates || []))
+    def delete(quads) do
+        deletions = Enum.join(quads, " .\n")
+        query = "mutation { delete { #{deletions} . } }"
+        IO.puts(query)
+        {:ok, %HTTPoison.Response{body: %{"code" => @success_code}}} = post("/query", query)
+        :ok
     end
 
 
