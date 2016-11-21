@@ -91,6 +91,7 @@ curl localhost:9051/nodes/idea
 ```
 
 **Delete a relationship**
+
 To delete a relationship, send a DELETE with the subject, predicate, and object (S P O) triple to delete. 
 (note: dgraph doesn't seem to have a node deletion capability... will research more)
 
