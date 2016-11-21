@@ -132,4 +132,4 @@ To delete a relationship, send a DELETE with the subject, predicate, and object 
 curl localhost:9051/node/self/idea/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1 -XDELETE
 ```
 
-The node should not longer appear in the results from ```curl localhost:9051/nodes/idea```
+The node should no longer appear in the results from ```curl localhost:9051/nodes/idea```
