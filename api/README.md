@@ -25,7 +25,7 @@ iex -S mix
 
 To run the tests, ensure the mind-db is running, and run:
 ```
-mix tests
+mix test
 ```
 
 ## Usage
