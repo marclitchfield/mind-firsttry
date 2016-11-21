@@ -21,13 +21,13 @@ defmodule MindRepo do
     end
   end
 
+  def link_nodes(_source, nil, _), do: :ok
+
   def link_nodes(source, predicate, object) do
     :ok = Dgraph.mutate([ Dgraph.quad(source, predicate, [node: object]) ])
   end
 
-  def get_nodes(source, properties, predicates), do: get_nodes(source, properties, predicates, [])
-
-  def get_nodes(source, properties, predicates, child_predicates) do
+  def get_nodes(source, properties, predicates \\ nil, child_predicates \\ nil) do
     Dgraph.query_nodes(source, properties, predicates, child_predicates)
   end
 

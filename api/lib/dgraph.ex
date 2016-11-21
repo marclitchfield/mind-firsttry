@@ -14,38 +14,43 @@ defmodule Dgraph do
         "<#{subject}> <#{predicate}> " <> quad_object(object)
     end
 
-    # TODO: scrub inputs
-    def quad_object([node: name]), do: "<#{name}>"
-    def quad_object([text: text]), do: "\"#{text}\""
-
     def mutate(quads) do
-        query = "mutation { set { " <> Enum.join(quads, " .\n") <> " . } }"
+        mutations = Enum.join(quads, " .\n")
+        query = "mutation { set { #{mutations} . } }"
         IO.puts(query)
         {:ok, %HTTPoison.Response{body: %{"code" => @success_code}}} = post("/query", query)
         :ok
     end
 
-    def query(xid, terms) do
+    def query_nodes(source, properties, predicates, child_predicates) do
+        query(source, map_predicates(properties, predicates || [], child_predicates || []))
+    end
+
+
+    defp quad_object([node: name]), do: ~s(<#{name |> scrub}>)
+    defp quad_object([text: text]), do: ~s("#{text |> scrub}")
+
+    defp scrub(atom) when is_atom(atom), do: atom
+    defp scrub(string) do
+        string |> String.replace(~s(\\), ~s()) |> String.replace(~s("), ~s(\\"))
+    end
+
+    defp query(xid, terms) do
         query = "{ me(_xid_: #{xid}) { #{terms} } }"
         IO.puts(query)
         {:ok, %HTTPoison.Response{body: body}} = post("/query", query)
         {:ok, body}
     end
-
-    def query_nodes(source, properties, predicates, child_predicates) do
-        query(source, map_predicates(properties, predicates, child_predicates))
-    end
     
     # TODO: scrub inputs
-    # TODO: Fix problem selecting node without predicates; doesn't return props
-    def map_predicates(properties, predicates, child_predicates) do
+    defp map_predicates(properties, predicates, child_predicates) do
         "#{properties |> string_list} " <> 
-            (predicates 
+            (predicates
                 |> Enum.map(fn(pred) -> "#{pred} { #{map_predicates(properties, child_predicates, [])} }" end) 
                 |> string_list)
     end
 
-    def string_list(terms) do
+    defp string_list(terms) do
         terms |> Enum.join(" ")
     end
 
