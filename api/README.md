@@ -43,7 +43,7 @@ It outputs the xid generated for the idea, e.g. ```f729e7bf-e7d2-4ea6-a3b5-dc815
 ```
 curl localhost:9051/nodes/idea -XPOST -H "Content-Type: application/json" -d '{ 
   "subject": "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1", 
-  "subject_predicate": "therefore", 
+  "predicate": "therefore", 
   "type": "concept",
   "body": "I am" 
 }'

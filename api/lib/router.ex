@@ -23,7 +23,7 @@ defmodule MindRouter do
   post "/nodes/:predicate" do
     {predicate, type, body} = {predicate, conn.params["type"], conn.params["body"]}
     {:ok, id} = MindRepo.new_node(:self, predicate, type, body)
-    case {conn.params["subject"], conn.params["subject_predicate"]} do
+    case {conn.params["subject"], conn.params["predicate"]} do
       {nil, _} -> :ok
       {subject, subject_predicate} -> MindRepo.link_nodes(subject, subject_predicate, id)
     end
