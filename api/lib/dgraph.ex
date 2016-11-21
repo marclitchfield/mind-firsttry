@@ -37,12 +37,16 @@ defmodule Dgraph do
     end
     
     # TODO: scrub inputs
-    def map_predicates(_properties, nil, _), do: ""
+    # TODO: Fix problem selecting node without predicates; doesn't return props
     def map_predicates(properties, predicates, child_predicates) do
-        props = properties |> Enum.join(" ")
-        predicates
-        |> Enum.map(fn(pred) -> "#{props} #{pred} { #{props} #{map_predicates(properties, child_predicates, [])} }" end) 
-        |> Enum.join(" ")  
+        "#{properties |> string_list} " <> 
+            (predicates 
+                |> Enum.map(fn(pred) -> "#{pred} { #{map_predicates(properties, child_predicates, [])} }" end) 
+                |> string_list)
+    end
+
+    def string_list(terms) do
+        terms |> Enum.join(" ")
     end
 
 end
