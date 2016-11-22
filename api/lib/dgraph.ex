@@ -42,14 +42,11 @@ defmodule Dgraph do
         "_xid_ " <> (request |> Enum.map(fn {k, v} -> query_term(k, v) end) |> Enum.join(" "))
     end
 
-    defp query_term(property, value) when is_map(value) do
+    defp query_term(property, value) when is_map(value) do 
         query_term(property, true) <> " { " <> query_expression(value) <> " }"
     end
 
-    defp query_term(property, value) when value do
-        "#{property |> scrub}"
-    end
-
+    defp query_term(property, value) when value, do: "#{property |> scrub}"
     defp query_term(_property, _value), do: ""
 
 
