@@ -73,9 +73,12 @@ curl localhost:9051/nodes/idea -XPOST -H "Content-Type: application/json" -d '{
 
 ### Get a node
 
-To retrieve a node:
+To retrieve a node, post to the query endpoint with a json structure that describes the fields that should be returned.
+In this example, the body is returned:
 ```
-curl -g "localhost:9051/node/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1?p[]=therefore"
+curl -g "localhost:9051/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
+  "body": true
+}'
 ```
 ```javascript
 {
@@ -87,12 +90,17 @@ curl -g "localhost:9051/node/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1?p[]=therefore"
 ```
 
 
-### Get a node and related node by predicates
+### Get related nodes
 
-To retrieve a node and related nodes, provide a list of predicates with one or more p[] query string parameters:
+You can also traverse predicates in the graph to select nodes, and the desired properties.
 
 ```
-curl -g "localhost:9051/node/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1?p[]=therefore"
+curl -g "localhost:9051/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
+  "body": true,
+  "therefore": {
+    "body": true
+  }
+}'
 ```
 ```javascript
 {
@@ -100,25 +108,6 @@ curl -g "localhost:9051/node/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1?p[]=therefore"
     body: "I think",
     therefore: { body: "I am", _xid_: "160ddbcd-ac81-4de0-b055-d01555d1a59c" },
     _xid_: "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1"
-  }
-}
-```
-
-
-### Get nodes linked to self
-
-To get all nodes linked to 'self' by a predicate, provide the predicate in the url
-
-```
-curl localhost:9051/nodes/idea
-```
-```javascript
-{
-  me: {
-    "idea": [
-      { body: "I am", _xid_: "160ddbcd-ac81-4de0-b055-d01555d1a59c" },
-      { body: "I think", _xid_: "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" }
-    ]
   }
 }
 ```

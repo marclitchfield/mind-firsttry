@@ -26,7 +26,7 @@ defmodule ApiTest do
 
   test "get node by id" do
     id = post_node().resp_body
-    response = get_node(id) |> to_json
+    response = query_node(id, %{"body" => true}) |> to_json
     assert response["me"]["_xid_"] == id
     assert response["me"]["body"] == @test_body
   end
@@ -34,7 +34,7 @@ defmodule ApiTest do
   test "get related nodes" do
     id_subject = post_node().resp_body
     id_object = post_node(id_subject).resp_body
-    response = get_node(id_subject, [@test_predicate]) |> to_json
+    response = query_node(id_subject, %{@test_predicate => %{}}) |> to_json
     assert response["me"]["_xid_"] == id_subject
     assert response["me"][@test_predicate]["_xid_"] == id_object
   end
@@ -43,7 +43,7 @@ defmodule ApiTest do
     id_subject = post_node().resp_body
     id_object = post_node(id_subject).resp_body
     delete_link(id_subject, @test_predicate, id_object)
-    response = get_node(id_subject) |> to_json
+    response = query_node(id_subject) |> to_json
     assert response["me"][@test_predicate] == nil
   end
 
@@ -55,21 +55,12 @@ defmodule ApiTest do
     call_post("/nodes/rel", [is: @test_node_type, body: @test_body, subject: id, predicate: @test_predicate])
   end
 
-  defp get_node(id) do
-    call_get("/node/#{id}")
-  end
-
-  defp get_node(id, predicates) do
-    pred_args = predicates |> Enum.map(fn p -> "p[]=#{p}" end) |> Enum.join("&")
-    call_get("/node/#{id}?#{pred_args}")
+  defp query_node(id, query \\ %{}) do
+    call_post("/query/#{id}", query)
   end
 
   defp delete_link(subject, predicate, object) do
     call_delete("/node/#{subject}/#{predicate}/#{object}")
-  end
-
-  defp call_get(url) do
-    conn(:get, url) |> Router.call(@opts)
   end
 
   defp call_post(url, payload \\ nil) do

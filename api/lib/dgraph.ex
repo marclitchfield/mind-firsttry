@@ -14,10 +14,6 @@ defmodule Dgraph do
         "<#{subject}> <#{predicate}> " <> quad_object(object)
     end
 
-    def query_nodes(source, properties, predicates, child_predicates) do
-        query(source, map_predicates(properties, predicates || [], child_predicates || []))
-    end
-
     def mutate(quads) do
         mutations = Enum.join(quads, " .\n")
         query = "mutation { set { #{mutations} . } }"
@@ -34,6 +30,24 @@ defmodule Dgraph do
         :ok
     end
 
+    def query(xid, request) do
+        query = "{ me(_xid_: #{xid}) { " <> query_expression(request) <> " } }"
+        IO.puts(query)
+        {:ok, %HTTPoison.Response{body: body}} = post("/query", query)
+        {:ok, body}
+    end
+
+    defp query_expression(request) do
+        "_xid_ " <> (request |> Enum.map(fn {k, v} -> query_term(k, v) end) |> Enum.join(" "))
+    end
+
+    defp query_term(property, value) do
+        cond do
+            is_map(value) -> "#{property} { " <> query_expression(value) <> " }"
+            value -> "#{property}"
+            true -> ""
+        end        
+    end
 
     defp quad_object([node: name]), do: ~s(<#{name |> scrub}>)
     defp quad_object([text: text]), do: ~s("#{text |> scrub}")
@@ -41,25 +55,6 @@ defmodule Dgraph do
     defp scrub(atom) when is_atom(atom), do: atom
     defp scrub(string) do
         string |> String.replace(~s(\\), ~s()) |> String.replace(~s("), ~s(\\"))
-    end
-
-    defp query(xid, terms) do
-        query = "{ me(_xid_: #{xid}) { #{terms} } }"
-        IO.puts(query)
-        {:ok, %HTTPoison.Response{body: body}} = post("/query", query)
-        {:ok, body}
-    end
-    
-    # TODO: scrub inputs
-    defp map_predicates(properties, predicates, child_predicates) do
-        "#{properties |> string_list} " <> 
-            (predicates
-                |> Enum.map(fn(pred) -> "#{pred} { #{map_predicates(properties, child_predicates, [])} }" end) 
-                |> string_list)
-    end
-
-    defp string_list(terms) do
-        terms |> Enum.join(" ")
     end
 
 end

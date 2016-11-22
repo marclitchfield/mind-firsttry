@@ -27,8 +27,8 @@ defmodule MindRepo do
     :ok = Dgraph.mutate([ Dgraph.quad(subject, predicate, [node: object]) ])
   end
 
-  def get_nodes(subject, properties, predicates \\ nil, child_predicates \\ nil) do
-    Dgraph.query_nodes(subject, properties, predicates, child_predicates)
+  def query_nodes(id, request) do
+    Dgraph.query(id, request)
   end
 
   def delete_link(subject, predicate, object) do

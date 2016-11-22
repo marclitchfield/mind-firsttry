@@ -9,14 +9,10 @@ defmodule MindRouter do
   plug :match
   plug :dispatch
 
-  get "/nodes/:predicate" do
-    {:ok, nodes} = MindRepo.get_nodes(:self, @properties, [predicate], conn.params["p"])
-    send_resp(conn, 200, nodes |> Poison.encode!)
-  end
-
-  get "/node/:id" do
-    {:ok, node} = MindRepo.get_nodes(id, @properties, conn.params["p"])
-    send_resp(conn, 200, node |> Poison.encode!)
+  post "/query/:root" do
+    case MindRepo.query_nodes(root, conn.params) do
+      {:ok, results} -> send_resp(conn, 200, results |> Poison.encode!)
+    end
   end
 
   post "/nodes/:predicate" do
