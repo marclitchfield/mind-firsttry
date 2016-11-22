@@ -37,17 +37,21 @@ defmodule Dgraph do
         {:ok, body}
     end
 
+
     defp query_expression(request) do
         "_xid_ " <> (request |> Enum.map(fn {k, v} -> query_term(k, v) end) |> Enum.join(" "))
     end
 
-    defp query_term(property, value) do
-        cond do
-            is_map(value) -> "#{property} { " <> query_expression(value) <> " }"
-            value -> "#{property}"
-            true -> ""
-        end        
+    defp query_term(property, value) when is_map(value) do
+        query_term(property, true) <> " { " <> query_expression(value) <> " }"
     end
+
+    defp query_term(property, value) when value do
+        "#{property |> scrub}"
+    end
+
+    defp query_term(_property, _value), do: ""
+
 
     defp quad_object([node: name]), do: ~s(<#{name |> scrub}>)
     defp quad_object([text: text]), do: ~s("#{text |> scrub}")
