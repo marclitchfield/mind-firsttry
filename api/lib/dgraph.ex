@@ -50,8 +50,8 @@ defmodule Dgraph do
     defp query_term(_property, _value), do: ""
 
 
-    defp quad_object([node: name]), do: ~s(<#{name |> scrub}>)
-    defp quad_object([text: text]), do: ~s("#{text |> scrub}")
+    defp quad_object([node: xid]), do: ~s(<#{xid |> scrub}>)
+    defp quad_object([value: value]), do: ~s("#{value |> scrub}")
 
     defp scrub(atom) when is_atom(atom), do: atom
     defp scrub(string) do

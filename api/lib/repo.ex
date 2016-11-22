@@ -1,4 +1,5 @@
 defmodule MindRepo do
+  @type_pred "is"
   @types %{
     :space => "Space",
     :concept => "Concept",
@@ -7,24 +8,25 @@ defmodule MindRepo do
     :object => "Object"
   }
 
-  def new_node(subject, predicate, type, body) do
+  def new_node(subject, predicate, properties) do
+    type = properties[@type_pred]
     case Map.has_key?(@types, String.to_atom(type)) do
       true -> 
         id = UUID.uuid4()
-        :ok = Dgraph.mutate([
-          Dgraph.quad(subject, predicate, [node: id]),
-          Dgraph.quad(id, :body, [text: body]),
-          Dgraph.quad(id, :is, [node: type]) 
-        ])
+        object = Dgraph.quad(subject, predicate, [node: id])
+        object_type = Dgraph.quad(id, @type_pred, [node: type])
+        object_props = properties 
+          |> Enum.reject(fn {k, _v} -> k == @type_pred end) 
+          |> Enum.map(fn {k, v} -> Dgraph.quad(id, k, [value: v]) end)
+        :ok = Dgraph.mutate([object, object_type] ++ object_props)
         {:ok, id}
       false -> {:error, :invalid_type, type}
     end
   end
 
-  def link_nodes(_subject, nil, _), do: :ok
-
   def link_nodes(subject, predicate, object) do
-    :ok = Dgraph.mutate([ Dgraph.quad(subject, predicate, [node: object]) ])
+    quad = Dgraph.quad(subject, predicate, [node: object])
+    Dgraph.mutate([quad])
   end
 
   def query_nodes(id, request) do
@@ -36,7 +38,7 @@ defmodule MindRepo do
   end
 
   def initialize() do
-    types = @types |> Enum.map(fn({type, label}) -> Dgraph.quad(type, :label, [text: label]) end)
+    types = @types |> Enum.map(fn({type, label}) -> Dgraph.quad(type, :label, [value: label]) end)
     self = Dgraph.quad(:self, :is, [node: :person])
     :ok = Dgraph.mutate(types ++ [self])
   end

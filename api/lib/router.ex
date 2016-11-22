@@ -15,12 +15,11 @@ defmodule MindRouter do
     end
   end
 
-  post "/nodes/:predicate" do
-    {type, body} = {conn.params["is"], conn.params["body"]}
-    case MindRepo.new_node(:self, predicate, type, body) do
-      {:ok, id} -> MindRepo.link_nodes(conn.params["subject"], conn.params["predicate"], id)
+  post "/nodes/:subject/:predicate" do
+    case MindRepo.new_node(subject, predicate, conn.params) do
+      {:ok, id} -> 
         send_resp(conn, 200, id)
-      {:error, :invalid_type, type} ->
+      {:error, :invalid_type, type} -> 
         send_resp(conn, 400, "Invalid type: #{type}")
     end
   end

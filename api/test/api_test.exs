@@ -4,9 +4,10 @@ defmodule ApiTest do
   alias MindRouter, as: Router
   doctest Api
   @opts Router.init([])
-  @test_body "Test Node Body"
-  @test_node_type "concept"
+  @test_subject "Tests"
   @test_predicate "pred"
+  @test_object_type "concept"
+  @test_body "Test Node Body"
 
   test "initialize" do
     response = call_post("/init")
@@ -20,7 +21,7 @@ defmodule ApiTest do
 
   test "post related node" do
     id = post_node().resp_body
-    response = post_node(id)
+    response = post_related_node(id)
     assert response.status == 200
   end
 
@@ -33,7 +34,7 @@ defmodule ApiTest do
 
   test "get related nodes" do
     id_subject = post_node().resp_body
-    id_object = post_node(id_subject).resp_body
+    id_object = post_related_node(id_subject).resp_body
     response = query_node(id_subject, %{@test_predicate => %{}}) |> to_json
     assert response["me"]["_xid_"] == id_subject
     assert response["me"][@test_predicate]["_xid_"] == id_object
@@ -41,18 +42,18 @@ defmodule ApiTest do
 
   test "delete relationship" do
     id_subject = post_node().resp_body
-    id_object = post_node(id_subject).resp_body
+    id_object = post_related_node(id_subject).resp_body
     delete_link(id_subject, @test_predicate, id_object)
-    response = query_node(id_subject) |> to_json
+    response = query_node(id_subject, %{@test_predicate => %{}}) |> to_json
     assert response["me"][@test_predicate] == nil
   end
 
   defp post_node() do
-    call_post("/nodes/rel", [is: @test_node_type, body: @test_body])
+    call_post("/nodes/#{@test_subject}/#{@test_predicate}", [is: @test_object_type, body: @test_body])
   end
 
-  defp post_node(id) do
-    call_post("/nodes/rel", [is: @test_node_type, body: @test_body, subject: id, predicate: @test_predicate])
+  defp post_related_node(id) do
+    call_post("/nodes/#{id}/#{@test_predicate}", [is: @test_object_type, body: @test_body])
   end
 
   defp query_node(id, query \\ %{}) do

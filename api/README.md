@@ -39,15 +39,17 @@ curl localhost:9051/init -XPOST -H "Content-Type: application/json"
 
 ### Post a node
 
-To create a node, specify the relationship to 'self' in the url, and choose a valid type for the node with the 'is' predicate. 
+To create a node, provide a source and predicate in the url, and properties in the payload. 
+The 'is' property is required, and must be a valid node type. To start with, try creating a node
+that is linked to the built in 'self' node:
 
 ```
-curl localhost:9051/nodes/idea -XPOST -H "Content-Type: application/json" -d '{ 
+curl localhost:9051/nodes/self/idea -XPOST -H "Content-Type: application/json" -d '{ 
   "is": "concept", 
   "body": "I think" 
 }'
 ```
-It outputs the xid generated for the idea, e.g. ```f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1```
+It outputs the xid generated for the node, e.g. ```f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1```
 
 Available types for the 'is' predicate:
 * space
@@ -57,14 +59,12 @@ Available types for the 'is' predicate:
 * object
 
 
-### Post a related node
+### Post another node
 
-To create a node that is linked to another node, specify the subject node and the predicate that links the subject to the new node. The new node will be linked to 'self' with the relationship provided in the url.
+Now try creating another node that is linked to the first node you created:
 
 ```
-curl localhost:9051/nodes/idea -XPOST -H "Content-Type: application/json" -d '{ 
-  "subject": "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1", 
-  "predicate": "therefore", 
+curl localhost:9051/nodes/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1/therefore -XPOST -H "Content-Type: application/json" -d '{
   "is": "concept",
   "body": "I am" 
 }'
@@ -76,7 +76,7 @@ curl localhost:9051/nodes/idea -XPOST -H "Content-Type: application/json" -d '{
 To retrieve a node, post to the query endpoint with a json structure that describes the fields that should be returned.
 In this example, the body is returned:
 ```
-curl -g "localhost:9051/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
+curl "localhost:9051/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
   "body": true
 }'
 ```
