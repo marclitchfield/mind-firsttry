@@ -92,7 +92,7 @@ curl -g "localhost:9051/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "C
 
 ### Get related nodes
 
-You can also traverse predicates in the graph to select nodes, and the desired properties.
+You can also traverse predicates in the graph to select related nodes, and the desired properties.
 
 ```
 curl -g "localhost:9051/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
