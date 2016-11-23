@@ -95,7 +95,7 @@ curl "localhost:9051/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Cont
 You can also traverse predicates in the graph to select related nodes, and the desired properties.
 
 ```
-curl -g "localhost:9051/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
+curl "localhost:9051/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
   "body": true,
   "therefore": {
     "body": true
@@ -121,4 +121,18 @@ To delete a relationship, send a DELETE with the subject, predicate, and object 
 curl localhost:9051/node/self/idea/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1 -XDELETE
 ```
 
-The node should no longer appear in the results from ```curl localhost:9051/nodes/idea```
+The node should no longer appear in the results from ```/query/self```
+
+
+## fish functions
+
+There are fish shell functions available in ```scripts/mind-commands.fsh``` that make
+it easier to interact with the api from the command line. 
+
+```
+set xid (new_node self idea concept "I think")
+new_node $xid therefore concept "I am"
+query_node $xid therefore
+query_graph $xid '{ "body": true, "therefore": { "body": true } }'
+delete_link self idea $xid
+```

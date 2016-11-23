@@ -17,3 +17,7 @@ end
 function query_graph --description "query_graph <subject> <query>"
     curl "localhost:9051/query/$argv[1]" -XPOST -H "Content-Type: application/json" -d $argv[2]
 end
+
+function delete_link --description "delete_link <subject> <predicate> <object>"
+    curl "localhost:9051/node/$argv[1]/$argv[2]/$argv[3]" -XDELETE
+end
