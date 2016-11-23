@@ -19,8 +19,8 @@ defmodule MindRouter do
     case MindRepo.new_node(subject, predicate, conn.params) do
       {:ok, id} -> 
         send_resp(conn, 200, id)
-      {:error, :invalid_type, type} -> 
-        send_resp(conn, 400, "Invalid type: #{type}")
+      {:error, :missing_predicate, p} -> 
+        send_resp(conn, 400, "Missing required predicate: #{p}")
     end
   end
 

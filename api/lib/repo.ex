@@ -9,18 +9,16 @@ defmodule MindRepo do
   }
 
   def new_node(subject, predicate, properties) do
-    type = properties[@type_pred]
-    case Map.has_key?(@types, String.to_atom(type)) do
+    case Map.has_key?(properties, @type_pred) do
       true -> 
         id = UUID.uuid4()
         object = Dgraph.quad(subject, predicate, [node: id])
-        object_type = Dgraph.quad(id, @type_pred, [node: type])
-        object_props = properties 
-          |> Enum.reject(fn {k, _v} -> k == @type_pred end) 
-          |> Enum.map(fn {k, v} -> Dgraph.quad(id, k, [value: v]) end)
-        :ok = Dgraph.mutate([object, object_type] ++ object_props)
+        props = properties |> Enum.map(
+          fn {k, v} -> Dgraph.quad(id, k, [value: v]) end)
+        :ok = Dgraph.mutate([object] ++ props)
         {:ok, id}
-      false -> {:error, :invalid_type, type}
+      false -> 
+        {:error, :missing_predicate, @type_pred}
     end
   end
 
