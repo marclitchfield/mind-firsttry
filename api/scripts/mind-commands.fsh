@@ -7,6 +7,10 @@ function new_node --description "new_node <subject> <predicate> <type> <body>"
     }"
 end
 
+function link_nodes --description "link_nodes <subject> <predicate> <object>"
+    curl "localhost:9051/links/$argv[1]/$argv[2]/$argv[3]" -XPOST -H "Content-Type: application/json"
+end
+
 function query_node --description "query_node <subject> <predicate>"
     curl "localhost:9051/query/$argv[1]" -XPOST -H "Content-Type: application/json" -d "{
         \"body\": true,

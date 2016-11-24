@@ -33,6 +33,15 @@ defmodule ApiTest do
     assert response["me"]["body"] == @test_body
   end
 
+  import IEx
+  @tag :wip
+  test "node has valid 'is' predicate" do
+    id = post_node().resp_body
+    response = query_node(id, %{"body" => true, "is" => %{}}) |> to_json
+    IEx.pry
+    assert response["me"]["is"]["_xid_"] == @test_object_type
+  end
+
   test "get related nodes" do
     id_subject = post_node().resp_body
     id_object = post_related_node(id_subject).resp_body

@@ -45,8 +45,11 @@ defmodule MindRepo do
 
   defp new_node_quads(subject, predicate, id, properties) do
     object = Dgraph.quad(subject, predicate, [node: id])
-    props = properties |> Enum.map(fn {k, v} -> Dgraph.quad(id, k, [value: v]) end)
-    [object] ++ props
+    object_type = Dgraph.quad(id, @type_pred, [node: properties[@type_pred]])
+    props = properties
+      |> Enum.reject(fn {k, _} -> k == @type_pred end)
+      |> Enum.map(fn {k, v} -> Dgraph.quad(id, k, [value: v]) end)
+    [object, object_type] ++ props
   end
 
 end
