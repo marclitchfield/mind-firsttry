@@ -44,7 +44,7 @@ The 'is' property is the only required property for the new node. Try creating a
 that is linked to the built in 'self' node:
 
 ```
-curl localhost:9051/nodes/self/root -XPOST -H "Content-Type: application/json" -d '{ 
+curl localhost:9051/graph/self/root -XPOST -H "Content-Type: application/json" -d '{ 
   "is": "idea", 
   "body": "I think" 
 }'
@@ -57,7 +57,7 @@ It outputs the xid generated for the node, e.g. ```f729e7bf-e7d2-4ea6-a3b5-dc815
 Now try creating another node that is linked to the first node you created:
 
 ```
-curl localhost:9051/nodes/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1/therefore -XPOST -H "Content-Type: application/json" -d '{
+curl localhost:9051/graph/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1/therefore -XPOST -H "Content-Type: application/json" -d '{
   "is": "idea",
   "body": "I am" 
 }'
@@ -111,7 +111,7 @@ To delete a relationship, send a DELETE with the subject, predicate, and object 
 (note: dgraph doesn't seem to have a node deletion capability... will research more)
 
 ```
-curl localhost:9051/node/self/root/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1 -XDELETE
+curl localhost:9051/graph/self/root/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1 -XDELETE
 ```
 
 The node should no longer appear in the results from ```/query/self``` when querying with the 'root' predicate.
@@ -122,7 +122,7 @@ The node should no longer appear in the results from ```/query/self``` when quer
 There are fish shell functions available in ```scripts/mind-commands.fsh``` that make
 it easier to interact with the api from the command line. 
 
-```
+```fish
 set xid (new_node self root idea "I think")
 new_node $xid therefore idea "I am"
 query_node $xid therefore

@@ -73,7 +73,11 @@ defmodule Dgraph do
   defp unescape_values(map) when is_map(map) do
     Enum.map(map, fn {k, v} -> {k, unescape_values(v)} end) |> Enum.into(%{})
   end
-  
+
+  defp unescape_values(list) when is_list(list) do
+    Enum.map(list, fn x -> unescape_values(x) end)
+  end
+
   defp unescape_values(value) do
     Enum.reduce(@escape_entities |> Enum.reverse, value, fn(replacement, acc) ->
       String.replace(acc, elem(replacement, 1), elem(replacement, 0))
@@ -83,14 +87,17 @@ defmodule Dgraph do
   defp query_root(xid, body), do: {:ok, "{ me(_xid_: #{xid}) { #{body} } }"}
 
   defp query_body(request) do
-    "_xid_ " <> (request |> Enum.map(fn {k, v} -> query_term(k, v) end) |> Enum.join(" "))
+    request 
+      |> Enum.map(fn {k, v} -> query_term(k, v) end)
+      |> Enum.concat(["_xid_"])
+      |> Enum.join(" ")
   end
 
   defp query_term(property, value) when is_map(value) do
-    property <> " { " <> query_body(value) <> "}"
+    "#{property} { #{query_body(value)} }"
   end
 
-  defp query_term(property, value) when value, do: property
+  defp query_term(property, value) when value, do: "#{property}"
   defp query_term(_property, _value), do: ""
 
   defp execute({:ok, query}) do

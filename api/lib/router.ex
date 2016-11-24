@@ -11,15 +11,15 @@ defmodule MindRouter do
     respond(conn, MindRepo.query_nodes(root, conn.params))
   end
 
-  post "/nodes/:subject/:predicate" do
+  post "/graph/:subject/:predicate" do
     respond(conn, MindRepo.new_node(subject, predicate, conn.params))
   end
 
-  post "/links/:subject/:predicate/:object" do
-    respond(conn, MindRepo.link_nodes(subject, predicate, object))
+  post "/graph/:subject/:predicate/:object" do
+    respond(conn, MindRepo.new_node(subject, predicate, object, conn.params))
   end
 
-  delete "/node/:subject/:predicate/:object" do
+  delete "/graph/:subject/:predicate/:object" do
     respond(conn, MindRepo.delete_link(subject, predicate, object))
   end
 

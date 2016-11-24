@@ -33,12 +33,9 @@ defmodule ApiTest do
     assert response["me"]["body"] == @test_body
   end
 
-  import IEx
-  @tag :wip
   test "node has valid 'is' predicate" do
     id = post_node().resp_body
     response = query_node(id, %{"body" => true, "is" => %{}}) |> to_json
-    IEx.pry
     assert response["me"]["is"]["_xid_"] == @test_object_type
   end
 
@@ -48,6 +45,24 @@ defmodule ApiTest do
     response = query_node(id_subject, %{@test_predicate => %{}}) |> to_json
     assert response["me"]["_xid_"] == id_subject
     assert response["me"][@test_predicate]["_xid_"] == id_object
+  end
+
+  test "get multiple related nodes" do
+    id_subject = post_node().resp_body
+    id_object1 = post_related_node(id_subject).resp_body
+    id_object2 = post_related_node(id_subject).resp_body
+    response = query_node(id_subject, %{@test_predicate => %{}}) |> to_json
+    assert response["me"][@test_predicate] |> Enum.any?(fn x -> x["_xid_"] == id_object1 end)
+    assert response["me"][@test_predicate] |> Enum.any?(fn x -> x["_xid_"] == id_object2 end)
+  end
+
+  test "link existing nodes" do
+    id_subject = post_node().resp_body
+    id_object = post_node().resp_body
+    post_node(id_subject, @test_predicate, id_object, %{"newprop" => "new"})
+    response = query_node(id_subject, %{@test_predicate => %{"newprop" => true}}) |> to_json
+    assert response["me"][@test_predicate]["_xid_"] == id_object
+    assert response["me"][@test_predicate]["newprop"] == "new"
   end
 
   test "delete relationship" do
@@ -70,11 +85,15 @@ defmodule ApiTest do
   end
 
   defp post_node(predicate \\ @test_predicate, properties \\ [body: @test_body]) do
-    call_post("/nodes/#{@test_subject}/#{predicate}", [is: @test_object_type] ++ properties)
+    call_post("/graph/#{@test_subject}/#{predicate}", [is: @test_object_type] ++ properties)
+  end
+
+  defp post_node(subject, predicate, object, properties) do
+    call_post("/graph/#{subject}/#{predicate}/#{object}", properties)
   end
 
   defp post_related_node(id) do
-    call_post("/nodes/#{id}/#{@test_predicate}", [is: @test_object_type, body: @test_body])
+    call_post("/graph/#{id}/#{@test_predicate}", [is: @test_object_type, body: @test_body])
   end
 
   defp query_node(id, query) do
@@ -82,7 +101,7 @@ defmodule ApiTest do
   end
 
   defp delete_link(subject, predicate, object) do
-    call_delete("/node/#{subject}/#{predicate}/#{object}")
+    call_delete("/graph/#{subject}/#{predicate}/#{object}")
   end
 
   defp call_post(url, payload \\ nil) do

@@ -1,14 +1,14 @@
-#!/bin/fsh
+#!/usr/local/bin/fish
 
 function new_node --description "new_node <subject> <predicate> <type> <body>"
-    curl "localhost:9051/nodes/$argv[1]/$argv[2]" -XPOST -H "Content-Type: application/json" -d "{
+    curl "localhost:9051/graph/$argv[1]/$argv[2]" -XPOST -H "Content-Type: application/json" -d "{
         \"is\": \"$argv[3]\",
         \"body\": \"$argv[4]\"
     }"
 end
 
-function link_nodes --description "link_nodes <subject> <predicate> <object>"
-    curl "localhost:9051/links/$argv[1]/$argv[2]/$argv[3]" -XPOST -H "Content-Type: application/json"
+function link_nodes --description "link_nodes <subject> <predicate> <object> <properties>"
+    curl "localhost:9051/graph/$argv[1]/$argv[2]/$argv[3]" -XPOST -H "Content-Type: application/json" -d $argv[4]
 end
 
 function query_node --description "query_node <subject> <predicate>"
@@ -23,5 +23,5 @@ function query_graph --description "query_graph <subject> <query>"
 end
 
 function delete_link --description "delete_link <subject> <predicate> <object>"
-    curl "localhost:9051/node/$argv[1]/$argv[2]/$argv[3]" -XDELETE
+    curl "localhost:9051/graph/$argv[1]/$argv[2]/$argv[3]" -XDELETE
 end
