@@ -4,11 +4,12 @@ defmodule ApiTest do
   alias MindRouter, as: Router
   doctest Api
   @opts Router.init([])
-  @test_subject "Tests"
+  @test_subject "tests"
   @test_predicate "pred"
   @test_object_type "concept"
   @test_body "Test Node Body"
-
+  @special_chars ~s(sq:' dq:" bs:\\ # lb:} rb:{ amp:&)
+  
   test "initialize" do
     response = call_post("/init")
     assert response.status == 200
@@ -32,6 +33,7 @@ defmodule ApiTest do
     assert response["me"]["body"] == @test_body
   end
 
+  @tag :wip
   test "get related nodes" do
     id_subject = post_node().resp_body
     id_object = post_related_node(id_subject).resp_body
@@ -48,15 +50,26 @@ defmodule ApiTest do
     assert response["me"][@test_predicate] == nil
   end
 
-  defp post_node() do
-    call_post("/nodes/#{@test_subject}/#{@test_predicate}", [is: @test_object_type, body: @test_body])
+  test "post and query with special characters in body" do
+    id = post_node(@test_predicate, [body: @special_chars]).resp_body
+    response = query_node(id, %{"body" => true}) |> to_json
+    assert response["me"]["body"] == @special_chars
+  end
+
+  test "post with special characters in predicate returns error" do
+    response = post_node(@special_chars)
+    assert response.status == 400
+  end
+
+  defp post_node(predicate \\ @test_predicate, properties \\ [body: @test_body]) do
+    call_post("/nodes/#{@test_subject}/#{predicate}", [is: @test_object_type] ++ properties)
   end
 
   defp post_related_node(id) do
     call_post("/nodes/#{id}/#{@test_predicate}", [is: @test_object_type, body: @test_body])
   end
 
-  defp query_node(id, query \\ %{}) do
+  defp query_node(id, query) do
     call_post("/query/#{id}", query)
   end
 
@@ -75,7 +88,10 @@ defmodule ApiTest do
   end
 
   defp to_json(response) do
-    response.resp_body |> Poison.decode!
+    case response.status do
+      200 -> response.resp_body |> Poison.decode!
+      _ -> flunk response.resp_body
+    end
   end
   
 end

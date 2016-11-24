@@ -10,21 +10,14 @@ defmodule MindRepo do
 
   def new_node(subject, predicate, properties) do
     case Map.has_key?(properties, @type_pred) do
-      true -> 
-        id = UUID.uuid4()
-        object = Dgraph.quad(subject, predicate, [node: id])
-        props = properties |> Enum.map(
-          fn {k, v} -> Dgraph.quad(id, k, [value: v]) end)
-        :ok = Dgraph.mutate([object] ++ props)
-        {:ok, id}
-      false -> 
-        {:error, :missing_predicate, @type_pred}
+      true -> insert_new_node(subject, predicate, properties)
+      false -> {:error, :missing_predicate, @type_pred}
     end
   end
 
   def link_nodes(subject, predicate, object) do
     quad = Dgraph.quad(subject, predicate, [node: object])
-    Dgraph.mutate([quad])
+    Dgraph.update([quad])
   end
 
   def query_nodes(id, request) do
@@ -36,9 +29,24 @@ defmodule MindRepo do
   end
 
   def initialize() do
-    types = @types |> Enum.map(fn({type, label}) -> Dgraph.quad(type, :label, [value: label]) end)
     self = Dgraph.quad(:self, :is, [node: :person])
-    :ok = Dgraph.mutate(types ++ [self])
+    types = @types |> Enum.map(fn({type, label}) -> Dgraph.quad(type, :label, [value: label]) end)
+    Dgraph.update([self] ++ types)
+  end
+
+ 
+  defp insert_new_node(subject, predicate, properties) do
+    id = UUID.uuid4()
+    case Dgraph.update(new_node_quads(subject, predicate, id, properties)) do
+      {:ok, _} -> {:ok, id}
+      error -> error
+    end
+  end
+
+  defp new_node_quads(subject, predicate, id, properties) do
+    object = Dgraph.quad(subject, predicate, [node: id])
+    props = properties |> Enum.map(fn {k, v} -> Dgraph.quad(id, k, [value: v]) end)
+    [object] ++ props
   end
 
 end
