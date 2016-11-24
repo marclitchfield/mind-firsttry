@@ -7,8 +7,8 @@ function new_node --description "new_node <subject> <predicate> <type> <body>"
     }"
 end
 
-function link_nodes --description "link_nodes <subject> <predicate> <object> <properties>"
-    curl "localhost:9051/graph/$argv[1]/$argv[2]/$argv[3]" -XPOST -H "Content-Type: application/json" -d $argv[4]
+function link_nodes --description "link_nodes <subject> <predicate> <object>"
+    curl "localhost:9051/graph/$argv[1]/$argv[2]/$argv[3]" -XPOST -H "Content-Type: application/json" -d "{}" 
 end
 
 function query_node --description "query_node <subject> <predicate>"

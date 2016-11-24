@@ -119,8 +119,8 @@ The node should no longer appear in the results from ```/query/self``` when quer
 
 ## fish functions
 
-There are fish shell functions available in ```scripts/mind-commands.fsh``` that make
-it easier to interact with the api from the command line. 
+There are fish shell functions available in ```scripts/commands.fish``` that make
+it easier to interact with the api from the command line. These functions are simple wrappers around curl.
 
 ```fish
 set xid (new_node self root idea "I think")
