@@ -33,7 +33,6 @@ defmodule ApiTest do
     assert response["me"]["body"] == @test_body
   end
 
-  @tag :wip
   test "get related nodes" do
     id_subject = post_node().resp_body
     id_object = post_related_node(id_subject).resp_body
