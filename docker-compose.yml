@@ -17,7 +17,7 @@ services:
     ports:
     - "5010:9010"
     environment:
-    - MIND_API=http://mind-api:5000
+    - MIND_API_URL=http://mind-api:5000
     links:
     - mind-api
   mind-db:

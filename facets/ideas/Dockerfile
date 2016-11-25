@@ -10,4 +10,4 @@ RUN webpack
 
 ENV PORT 9010
 
-ENTRYPOINT npm run start
+ENTRYPOINT npm start
