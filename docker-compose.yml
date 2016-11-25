@@ -11,6 +11,15 @@ services:
     - MIND_DGRAPH_URL=http://mind-db:8080
     links:
     - mind-db
+  mind-facets.ideas:
+    container_name: mind-facets.ideas
+    build: ./facets/ideas
+    ports:
+    - "5010:3000"
+    environment:
+    - MIND_API=http://mind-api:5000
+    links:
+    - mind-api
   mind-db:
     container_name: mind-db
     entrypoint: dgraph
