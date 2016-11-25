@@ -10,7 +10,7 @@ mix deps.get
 mix compile
 ```
 
-Ensure that the mind-db is running at ```http://localhost:8080```. 
+Ensure that the mind-db is running at ```http://localhost:5008```. 
 You can change this location with the ```MIND_DGRAPH_URL``` environment variable.
 
 To start the server, run
@@ -34,7 +34,7 @@ These steps outline how to interact with the mind-api using curl
 
 ### Initialize the mind
 ```
-curl localhost:9051/init -XPOST -H "Content-Type: application/json"
+curl localhost:9000/init -XPOST -H "Content-Type: application/json"
 ```
 
 ### Post a node
@@ -44,7 +44,7 @@ The 'is' property is the only required property for the new node. Try creating a
 that is linked to the built in 'self' node:
 
 ```
-curl localhost:9051/graph/self/root -XPOST -H "Content-Type: application/json" -d '{ 
+curl localhost:9000/graph/self/root -XPOST -H "Content-Type: application/json" -d '{ 
   "is": "idea", 
   "body": "I think" 
 }'
@@ -57,7 +57,7 @@ It outputs the xid generated for the node, e.g. ```f729e7bf-e7d2-4ea6-a3b5-dc815
 Now try creating another node that is linked to the first node you created:
 
 ```
-curl localhost:9051/graph/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1/therefore -XPOST -H "Content-Type: application/json" -d '{
+curl localhost:9000/graph/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1/therefore -XPOST -H "Content-Type: application/json" -d '{
   "is": "idea",
   "body": "I am" 
 }'
@@ -69,7 +69,7 @@ curl localhost:9051/graph/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1/therefore -XPOST 
 To retrieve a node, post to the query endpoint with a json structure that describes the fields that should be returned.
 In this example, the body is returned:
 ```
-curl "localhost:9051/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
+curl "localhost:9000/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
   "body": true
 }'
 ```
@@ -88,7 +88,7 @@ curl "localhost:9051/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Cont
 You can also traverse predicates in the graph to select related nodes, and the desired properties.
 
 ```
-curl "localhost:9051/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
+curl "localhost:9000/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
   "body": true,
   "therefore": {
     "body": true
@@ -111,7 +111,7 @@ To delete a relationship, send a DELETE with the subject, predicate, and object 
 (note: dgraph doesn't seem to have a node deletion capability... will research more)
 
 ```
-curl localhost:9051/graph/self/root/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1 -XDELETE
+curl localhost:9000/graph/self/root/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1 -XDELETE
 ```
 
 The node should no longer appear in the results from ```/query/self``` when querying with the 'root' predicate.

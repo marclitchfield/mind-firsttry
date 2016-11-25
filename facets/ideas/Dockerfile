@@ -6,8 +6,8 @@ ADD . .
 RUN npm install -g webpack
 RUN npm install
 
-RUN webpack -p
+RUN webpack
 
-ENV PORT 3000
+ENV PORT 9010
 
 ENTRYPOINT npm run start

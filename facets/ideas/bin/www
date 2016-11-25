@@ -3,11 +3,10 @@ require("babel-register")({
   presets: ["es2015", "react"],
 });
 
-var debug = require('debug')('expressiso');
 var app = require('../app');
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 9010);
 
 var server = app.listen(app.get('port'), function() {
-  debug('Express server listening on port ' + server.address().port);
+  console.log('ideas facet server listening on port ' + server.address().port);
 });

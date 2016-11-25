@@ -13,7 +13,7 @@ defmodule Api.Mixfile do
   def application do
     [applications: [:cowboy, :logger, :plug, :httpoison],
      mod: {Api, []},
-     env: [cowboy_port: 5000]]
+     env: [cowboy_port: 9000]]
   end
 
   defp deps do

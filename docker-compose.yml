@@ -4,18 +4,18 @@ services:
     container_name: mind-api
     build: ./api
     ports:
-    - "5000:9051"
+    - "5000:9000"
     volumes:
     - apilog:/var/log
     environment:
-    - MIND_DGRAPH_URL=http://mind-db:8080
+    - MIND_DGRAPH_URL=http://mind-db:5008
     links:
     - mind-db
   mind-facets.ideas:
     container_name: mind-facets.ideas
     build: ./facets/ideas
     ports:
-    - "5010:3000"
+    - "5010:9010"
     environment:
     - MIND_API=http://mind-api:5000
     links:
@@ -24,7 +24,7 @@ services:
     container_name: mind-db
     entrypoint: dgraph
     ports:
-    - "8080:8080"
+    - "5008:8080"
     image: dgraph/dgraph
     volumes:
     - datavolume:/data
