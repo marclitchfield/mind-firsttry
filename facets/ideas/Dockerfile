@@ -3,10 +3,9 @@ FROM mhart/alpine-node:6
 WORKDIR .
 ADD . .
 
-RUN npm install -g webpack
 RUN npm install
 
-RUN webpack
+RUN node_modules/.bin/webpack
 
 ENV PORT 9010
 

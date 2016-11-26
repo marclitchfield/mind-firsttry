@@ -12,7 +12,7 @@ export default class Search extends React.Component {
     return (
       <div className="search-component">
         <input type="text" onChange={this.changeSearch.bind(this)} />
-        <p><span>You are searching for: {this.state.search}</span></p>
+        <p><span>You are searching for an answer: {this.state.search}</span></p>
       </div>
     );
   }
