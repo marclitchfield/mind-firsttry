@@ -2,6 +2,7 @@ version: '2'
 services:
   mind-api:
     container_name: mind-api
+    image: mind-api
     build: ./api
     ports:
     - "5000:9000"
@@ -13,6 +14,7 @@ services:
     - mind-db
   mind-facets.ideas:
     container_name: mind-facets.ideas
+    image: mind-facets.ideas
     build: ./facets/ideas
     ports:
     - "5010:9010"
@@ -22,6 +24,7 @@ services:
     - mind-api
   mind-db:
     container_name: mind-db
+    image: mind-db
     entrypoint: dgraph
     ports:
     - "5008:8080"
