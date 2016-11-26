@@ -1,17 +1,13 @@
-const express = require("express");
+import express from "express";
+import IdeasRepo from "../data/ideas";
+
 const router = express.Router();
-const request = require("superagent");
+const repo = new IdeasRepo();
 
 router.get("/ideas", function(req, res) {
-  request.post("http://localhost:5000/query/facets.idea", { "root.idea": { body: true } })
-    .end((err, response) => {
-      res.json(ideas.me["root.idea"].map((idea) => {
-        return {
-          id: idea._xid_,
-          body: idea.body
-        }
-      }));
-    });
+  repo.rootIdeas()
+    .then((ideas) => res.json(ideas))
+    .catch((err) => res.err(err));
 });
 
 module.exports = router;
