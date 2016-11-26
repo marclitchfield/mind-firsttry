@@ -3,19 +3,21 @@ import Idea from "./idea";
 import request from "superagent";
 
 export default class Root extends React.Component {
-  constructor() {
+  constructor(props) {
     super();
     this.state = {
-      ideas: []
+      ideas: [].concat(props.rootIdeas)
     };
   }
 
   componentDidMount() {
-    request.get("/api/ideas").end((err, res) => 
-      this.setState({
-        ideas: this.state.ideas.concat(JSON.parse(res.text))
-      })
-    );
+    if (this.state.ideas.length === 0) {
+      request.get("/api/ideas").end((err, res) => 
+        this.setState({
+          ideas: this.state.ideas.concat(JSON.parse(res.text))
+        })
+      );
+    }
   }
 
   render() {
