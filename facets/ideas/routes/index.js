@@ -9,6 +9,8 @@ import React from "react";
 router.get("/", function(req, res) {
   const markup = renderToString(<App />);
 
+  console.log('markup', markup);
+
   res.render("index", {
     title: "Mind: Ideas",
     markup: markup
