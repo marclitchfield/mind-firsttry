@@ -26,7 +26,7 @@ webpack --watch
 
 ## Fish commands
 
-To interact with the facet via the command line, try these commands from ``../../api/scripts/commands.fish```:
+To interact with the facet via the command line, try these commands from ```../../api/scripts/commands.fish```:
 
 ```fish
 set idea1 (new_node facets.idea root.idea idea "I think")
