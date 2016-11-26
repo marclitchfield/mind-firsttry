@@ -9,7 +9,7 @@ export default class IdeasRepo {
         .end((err, response) => {
           if (err) { return reject(err); }
           const res = JSON.parse(response.text);
-          const ideas = [].concat(res.me["root.idea"]).map((idea) => {
+          const ideas = [].concat(res.me["root.idea"] || []).map((idea) => {
             return {
               id: idea._xid_,
               body: idea.body
