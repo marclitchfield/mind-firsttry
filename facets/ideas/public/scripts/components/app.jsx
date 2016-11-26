@@ -1,8 +1,12 @@
 import React from "react";
-import Search from "./search";
+import Header from "./header";
+import Ideas from "./ideas";
 
 export default function App () {
   return (
-    <Search />
+    <div className="content">
+      <Header />
+      <Ideas />
+    </div>
   );
 }

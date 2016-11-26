@@ -10,7 +10,7 @@ router.get("/", function(req, res) {
   const markup = renderToString(<App />);
 
   res.render("index", {
-    title: "Express",
+    title: "Mind: Ideas",
     markup: markup
   });
 });

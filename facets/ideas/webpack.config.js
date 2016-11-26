@@ -15,7 +15,7 @@ module.exports = [{
   },
   resolve: {
     // you can now require('file') instead of require('file.coffee')
-    extensions: ["", ".js", ".jsx"],
+    extensions: ["", ".js", ".jsx", ".hjs"],
     root: [path.join(__dirname, "public", "scripts")],
     modulesDirectories: ["node_modules"]
   }

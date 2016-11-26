@@ -1,6 +1,6 @@
 import React from "react";
 
-export default class Search extends React.Component {
+export default class Ideas extends React.Component {
   constructor() {
     super();
 
@@ -12,7 +12,7 @@ export default class Search extends React.Component {
     return (
       <div className="search-component">
         <input type="text" onChange={this.changeSearch.bind(this)} />
-        <p><span>You are searching for an answer: {this.state.search}</span></p>
+        <p><span>You are searching for something: {this.state.search}</span></p>
       </div>
     );
   }
