@@ -7,7 +7,7 @@ function new_node --description "new_node <subject> <predicate> <type> <body>"
     }"
 end
 
-function post_node --description "new_node <subject> <predicate> <properties>"
+function post_node --description "post_node <subject> <predicate> <properties>"
     curl -v "$MIND_API_URL/graph/$argv[1]/$argv[2]" -XPOST -H "Content-Type: application/json" -d $argv[3]
 end
 
