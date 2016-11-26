@@ -13,6 +13,7 @@ defmodule Dgraph do
   ]
   
   def process_url(url) do
+    IO.puts "Request to #{Application.get_env(:api, :dgraph_url) <> url}"
     Application.get_env(:api, :dgraph_url) <> url
   end
 

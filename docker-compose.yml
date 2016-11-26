@@ -8,7 +8,7 @@ services:
     volumes:
     - apilog:/var/log
     environment:
-    - MIND_DGRAPH_URL=http://mind-db:5008
+    - MIND_DGRAPH_URL=http://mind-db:8080
     links:
     - mind-db
   mind-facets.ideas:
@@ -17,7 +17,7 @@ services:
     ports:
     - "5010:9010"
     environment:
-    - MIND_API_URL=http://mind-api:5000
+    - MIND_API_URL=http://mind-api:9000
     links:
     - mind-api
   mind-db:

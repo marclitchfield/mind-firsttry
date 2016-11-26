@@ -122,6 +122,11 @@ The node should no longer appear in the results from ```/query/self``` when quer
 There are fish shell functions available in ```scripts/commands.fish``` that make
 it easier to interact with the api from the command line. These functions are simple wrappers around curl.
 
+To use the scripts with fish shell, dot-source the commands and set the MIND_API_URL environment variable 
+to ```http://localhost:5008``` if you are using the mind-db docker container.
+
+Some example commands:
+
 ```fish
 set xid (new_node self root idea "I think")
 new_node $xid therefore idea "I am"
