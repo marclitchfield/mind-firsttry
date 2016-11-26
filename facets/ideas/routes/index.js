@@ -12,7 +12,6 @@ router.get("/", function(req, res) {
   repo.rootIdeas()
     .then((ideas) => {
       const markup = renderToString(<App rootIdeas={ideas} />);
-      console.log('markup', markup);
       res.render("index", {
         title: "Mind: Ideas",
         markup: markup

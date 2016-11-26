@@ -10,16 +10,6 @@ export default class Root extends React.Component {
     };
   }
 
-  componentDidMount() {
-    if (this.state.ideas.length === 0) {
-      request.get("/api/ideas").end((err, res) => 
-        this.setState({
-          ideas: this.state.ideas.concat(JSON.parse(res.text))
-        })
-      );
-    }
-  }
-
   render() {
     return (
       <div className="ideas">
