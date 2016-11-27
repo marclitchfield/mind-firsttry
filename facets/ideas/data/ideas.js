@@ -1,23 +1,26 @@
-import request from "superagent";
+import request from "axios";
 import config from "../config";
 
 export default class IdeasRepo {
   rootIdeas() {
-    return new Promise((resolve, reject) => {
-      
-      request.post(config.api_url + "/query/ideas.facet", { "root.idea": { body: true } })
-        .end((err, response) => {
-          if (err) { return reject(err); }
-          const res = JSON.parse(response.text);
-          const ideas = [].concat(res.me["root.idea"] || []).map((idea) => {
-            return {
-              id: idea._xid_,
-              body: idea.body
-            }
-          });
-          resolve(ideas);
+    return request
+      .post(config.api_url + "/query/ideas.facet", { "root.idea": { body: true } })
+      .then((response) => {
+        return [].concat(response.data.me["root.idea"] || []).map((idea) => {
+          return {
+            id: idea._xid_,
+            body: idea.body
+          }
         });
+      });
+  }
 
-    });
+  submitRootIdea(idea) {
+    const properties = { is: 'idea', body: idea.body };
+    return request
+      .post(config.api_url + "/graph/ideas.facet/root.idea", properties)
+      .then((response) => {
+        return Object.assign(properties, { id: response.data });
+      });
   }
 }

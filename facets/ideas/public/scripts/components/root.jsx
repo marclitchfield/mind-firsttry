@@ -1,19 +1,19 @@
 import React from "react";
 import Idea from "./idea";
-import request from "superagent";
+import Submit from "./submit";
 
 export default class Root extends React.Component {
   constructor(props) {
-    super();
-    this.state = {
-      ideas: [].concat(props.ideas)
-    };
+    super(props);
   }
 
   render() {
     return (
-      <div className="ideas">
-        {this.state.ideas.map((idea) => <Idea key={idea.id} idea={idea} />)}
+      <div className="root">
+        <div className="ideas">
+          {this.props.ideas.map((idea) => <Idea key={idea.id} idea={idea} />)}
+        </div>
+        <Submit onSubmit={this.props.onSubmit} />
       </div>
     );
   }

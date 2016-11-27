@@ -7,7 +7,7 @@
   </head>
   <body>
     <div id="content">{{{markup}}}</div>
-
+    <script>window.__APPSTATE__ = {{{state}}}</script>
     <script src="scripts/bundle.js"></script>
   </body>
 </html>

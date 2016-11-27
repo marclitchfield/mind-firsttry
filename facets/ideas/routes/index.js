@@ -7,17 +7,17 @@ import IdeasRepo from "../data/ideas";
 const router = express.Router();
 const repo = new IdeasRepo();
 
-/* GET home page. */
-router.get("/", function(req, res) {
-  repo.rootIdeas()
-    .then((ideas) => {
-      const markup = renderToString(<App rootIdeas={ideas} />);
-      res.render("index", {
-        title: "Mind: Ideas",
-        markup: markup
-      });
-    })
-    .catch((err) => res.err(err))
+router.get("/", function(req, res, next) {
+  repo.rootIdeas().then((ideas) => {
+    const state = { root: { ideas: ideas } };
+    const markup = renderToString(<App state={state} />);
+    res.render("index", {
+      title: "Mind: Ideas",
+      state: JSON.stringify(state),
+      markup: markup
+    });
+  })
+  .catch((err) => { next(err); });
 });
 
 module.exports = router;

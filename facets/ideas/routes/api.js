@@ -10,4 +10,10 @@ router.get("/ideas", function(req, res) {
     .catch((err) => res.err(err));
 });
 
+router.post("/ideas", function(req, res) {
+  repo.submitRootIdea(JSON.parse(req.text))
+    .then(() => res.success())
+    .catch((err) => res.err(err));
+});
+
 module.exports = router;
