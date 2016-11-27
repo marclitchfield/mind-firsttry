@@ -17,7 +17,7 @@ You should be able to access them from the host at ```http://localhost:<external
 | :---------------------------------- | ------------- | ------------- | :---------------------------- |
 | [mind-api](./api)                   | 5000          | 9000          | core json api                 |
 | mind-db                             | 5008          | 8080          | dgraph database server        |
-| [mind-facets.ideas](./facets/ideas) | 5010          | 9010          | ideas facet, web application  |
+| [mind-facet.ideas](./facets/ideas)  | 5010          | 9010          | ideas facet, web application  |
 
 To check the logs for a container, run ```docker logs <container_name>```.
 

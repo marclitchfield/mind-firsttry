@@ -6,7 +6,7 @@ export default class Root extends React.Component {
   constructor(props) {
     super();
     this.state = {
-      ideas: [].concat(props.rootIdeas)
+      ideas: [].concat(props.ideas)
     };
   }
 

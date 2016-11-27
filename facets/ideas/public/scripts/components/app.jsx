@@ -6,7 +6,7 @@ export default function App (props) {
   return (
     <div className="content">
       <Header />
-      <Root rootIdeas={props.rootIdeas} />
+      <Root ideas={props.rootIdeas} />
     </div>
   );
 }

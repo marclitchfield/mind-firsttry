@@ -12,9 +12,9 @@ services:
     - MIND_DGRAPH_URL=http://mind-db:8080
     links:
     - mind-db
-  mind-facets.ideas:
-    container_name: mind-facets.ideas
-    image: mind-facets.ideas
+  mind-facet.ideas:
+    container_name: mind-facet.ideas
+    image: mind-facet.ideas
     build: ./facets/ideas
     ports:
     - "5010:9010"

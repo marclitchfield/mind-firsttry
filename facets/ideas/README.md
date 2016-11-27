@@ -6,27 +6,29 @@ The ideas facet manipulates idea nodes in the mind.
 Install node, then run
 ```
 npm install
-npm install -g webpack
 ```
 
 Ensure that the mind-api is running at ```http://localhost:5000```. 
 You can change this location with the ```MIND_API_URL``` environment variable.
 
-To start the server, run
+To start the server and have it reload whenever files are changed, run
 ```
-npm start
+npm run server-watch
 ```
 
-The server should now be available at ```http://localhost:9010```
+The server should now be available at ```http://localhost:9010```. 
 
-To reload the server whenever a code change is made, run this in a new console:
+The server will restart whenever a file is changed, or if it crashes. To reload 
+the client assets whenever a change is made to files in the public folder, 
+run this in a new console:
 ```
-webpack --watch
+npm run webpack-watch
 ```
 
 ## Fish commands
 
-To interact with the facet via the command line, try these commands from ```../../api/scripts/commands.fish```:
+To interact with the facet via the command line, try these commands 
+from ```../../api/scripts/commands.fish```:
 
 ```fish
 set idea1 (new_node ideas.facet root.idea idea "I think")
