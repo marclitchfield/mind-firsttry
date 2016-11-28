@@ -4,8 +4,9 @@ import config from "../config";
 export default class IdeasRepo {
   rootIdeas() {
     return request
-      .post(config.api_url + "/query/ideas.facet", { "root.idea": { body: true } })
+      .post(config.api_url + "/query/ideas.facet", { "root.idea": { body: true, 'created.at': true } })
       .then((response) => {
+        console.log(JSON.stringify(response.data, undefined, 2));
         return [].concat(response.data.me["root.idea"] || []).map((idea) => {
           return {
             id: idea._xid_,

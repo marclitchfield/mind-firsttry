@@ -6,16 +6,14 @@ import _ from "lodash/core";
 export default class Root extends React.Component {
   constructor(props) {
     super(props);
-    this.props = {
-      ideas: _(props).sortBy('created')
-    }
   }
 
   render() {
+    var sortedIdeas = _.sortBy(this.props.ideas, 'created');
     return (
       <div className="root">
         <div className="ideas">
-          {this.props.ideas.map((idea) => <Idea key={idea.id} idea={idea} />)}
+          {sortedIdeas.map((idea) => <Idea key={idea.id} idea={idea} />)}
         </div>
         <Submit onSubmit={this.props.onSubmit} />
       </div>

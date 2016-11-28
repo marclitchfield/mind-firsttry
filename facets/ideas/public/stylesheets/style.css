@@ -29,3 +29,9 @@ a {
   padding: 6px;
   margin-bottom: 4px;
 }
+
+.idea .created {
+  color: lightcyan;
+  margin-top: .2em;
+  font-size: .6em;
+}
