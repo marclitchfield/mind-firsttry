@@ -8,6 +8,8 @@ export default class App extends React.Component {
     this.state = Object.assign({
       root: { ideas: [] }
     }, props.state || global.__APPSTATE__ || {});
+
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   handleSubmit(idea) {

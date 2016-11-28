@@ -11,8 +11,8 @@ router.get("/ideas", function(req, res) {
 });
 
 router.post("/ideas", function(req, res) {
-  repo.submitRootIdea(JSON.parse(req.text))
-    .then(() => res.success())
+  repo.submitRootIdea(req.body)
+    .then((idea) => res.json(idea))
     .catch((err) => res.err(err));
 });
 

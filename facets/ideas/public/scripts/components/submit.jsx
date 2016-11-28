@@ -1,5 +1,4 @@
 import React from "react";
-import IdeasRepo from "../../../data/ideas";
 import request from "axios";
 
 export default class Submit extends React.Component {
@@ -9,7 +8,6 @@ export default class Submit extends React.Component {
       body: ''
     };
 
-    this.repo = new IdeasRepo();
     this.handleChange = this.handleChange.bind(this);
     this.submit = this.submit.bind(this);
   }
@@ -20,7 +18,10 @@ export default class Submit extends React.Component {
 
   submit(event) {
     request.post("/api/ideas", { body: this.state.body })
-      .then((idea) => this.props.onSubmit(idea));
+      .then((response) => {
+        this.props.onSubmit(response.data);
+        this.setState({ body: '' });
+      });
     event.preventDefault();
   }
 
@@ -28,7 +29,7 @@ export default class Submit extends React.Component {
     return (
       <form onSubmit={this.submit} >
         <label>
-          <textarea value={this.state.value} onChange={this.handleChange} />
+          <textarea value={this.state.body} onChange={this.handleChange} />
         </label>
         <input type="submit" value="Submit" />
       </form>
