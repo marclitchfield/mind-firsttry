@@ -27,11 +27,11 @@ export default class Submit extends React.Component {
 
   render() {
     return (
-      <form onSubmit={this.submit} >
+      <form onSubmit={this.submit} className="submit-form" >
         <label>
-          <textarea value={this.state.body} onChange={this.handleChange} />
+          <textarea value={this.state.body} onChange={this.handleChange} placeholder="New idea" />
         </label>
-        <input type="submit" value="Submit" />
+        <input type="submit" className="button" value="Submit" />
       </form>
     );
   }
