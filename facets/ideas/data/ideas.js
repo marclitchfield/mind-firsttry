@@ -9,7 +9,8 @@ export default class IdeasRepo {
         return [].concat(response.data.me["root.idea"] || []).map((idea) => {
           return {
             id: idea._xid_,
-            body: idea.body
+            body: idea.body,
+            created: idea['created.at']
           }
         });
       });

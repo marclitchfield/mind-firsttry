@@ -36,5 +36,6 @@ defmodule MindRouter do
   defp respond(conn, {:ok, message}), do: send_resp(conn, 200, message)
   defp respond(conn, {:error, :invalid_request, details}), do: send_resp(conn, 400, "Invalid request: #{details}")
   defp respond(conn, {:error, err}), do: send_resp(conn, 500, "Server error: #{err}")
+  defp respond(conn, {:error, code, err}), do: send_resp(conn, 500, "Server error #{code}: #{err}")
 
 end

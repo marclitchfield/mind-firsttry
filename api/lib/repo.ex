@@ -1,9 +1,10 @@
 defmodule MindRepo do
   @type_pred "is"
+  @created_pred "created.at"
   @types %{
     :space => "Space",
     :concept => "Concept",
-    :event => "Event",
+    :event => "Event",  
     :person => "Person",
     :object => "Object"
   }
@@ -44,10 +45,11 @@ defmodule MindRepo do
 
   defp new_node_quads(subject, predicate, object, props) do
     object_quad = Dgraph.quad(subject, predicate, [node: object])
+    created_quad = Dgraph.quad(object, @created_pred, [value: (DateTime.utc_now |> DateTime.to_string) ])
     properties = props
       |> Enum.reject(fn {k, _} -> k == @type_pred end)
       |> Enum.map(fn {k, v} -> Dgraph.quad(object, k, [value: v]) end)
-    [object_quad] ++ properties
+    [object_quad, created_quad] ++ properties
   end
 
 end

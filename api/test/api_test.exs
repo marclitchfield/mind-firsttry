@@ -28,9 +28,10 @@ defmodule ApiTest do
 
   test "get node by id" do
     id = post_node().resp_body
-    response = query_node(id, %{"body" => true}) |> to_json
+    response = query_node(id, %{"body" => true, "created.at" => true}) |> to_json
     assert response["me"]["_xid_"] == id
     assert response["me"]["body"] == @test_body
+    assert response["me"]["created.at"] != nil
   end
 
   test "node has valid 'is' predicate" do
