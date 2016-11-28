@@ -35,3 +35,30 @@ a {
   margin-top: .2em;
   font-size: .6em;
 }
+
+.idea .relationships {
+  background-color: white;
+  border: 1px solid black;
+  border-radius: .2em;
+  color: darkslategray;
+  font-size: .8em;
+  padding: 8px 8px 4px 8px;
+  margin-top: 10px;
+}
+
+.idea .relationship {
+  margin-bottom: 4px;
+}
+
+.idea .relationships .predicate {
+  border: 1px solid black;
+  border-radius: .2em;
+  background-color: darkorange;
+  color: black;
+  margin-right: 5px;
+  display: inline-block;
+  text-align: center;
+  width: 6em;
+  font-size: .9em;
+  padding: 2px 4px;
+}
