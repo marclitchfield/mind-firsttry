@@ -1,6 +1,6 @@
 import express from "express";
 import { renderToString } from "react-dom/server";
-import App from "../public/scripts/components/app";
+import App from "../app/components/app";
 import React from "react";
 import IdeasRepo from "../data/ideas";
 

@@ -1,7 +1,7 @@
 var path = require("path");
 
 module.exports = [{
-  context: path.join(__dirname, "public", "scripts"),
+  context: path.join(__dirname, "app"),
   entry: "app",
   output: {
     path: path.join(__dirname, "public", "scripts"),
@@ -15,8 +15,8 @@ module.exports = [{
   },
   resolve: {
     // you can now require('file') instead of require('file.coffee')
-    extensions: ["", ".js", ".jsx", ".hjs"],
-    root: [path.join(__dirname, "public", "scripts")],
+    extensions: ["", ".js", ".jsx"],
+    root: [path.join(__dirname, "app")],
     modulesDirectories: ["node_modules"]
   }
 }];
