@@ -5,9 +5,9 @@ import Root from "./root";
 export default class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = Object.assign({
+    this.state = this.props.initialData || {
       root: { ideas: [] }
-    }, props.state || global.__APPSTATE__ || {});
+    };
 
     this.handleSubmit = this.handleSubmit.bind(this);
   }
