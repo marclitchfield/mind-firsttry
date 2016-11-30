@@ -3,7 +3,7 @@ import { render } from "react-dom";
 import { Router, browserHistory } from "react-router";
 import routes from "./routes";
 
-let handleCreateElement = (Component, props) => {
+function handleCreateElement(Component, props) {
   if (Component.hasOwnProperty("requestInitialData")) {
     let initialData = document.getElementById("initial-data").textContent;
     if (initialData.length > 0) {

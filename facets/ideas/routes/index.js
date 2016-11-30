@@ -11,43 +11,6 @@ const repo = new IdeasRepo();
 
 const RootFactory = React.createFactory(Root);
 
-let getPropsFromRoute = ({routes}, componentProps) => {
-  let props = {};
-  let lastRoute = routes[routes.length - 1];
-  routes.reduceRight((prevRoute, currRoute) => {
-    componentProps.forEach(componentProp => {
-      if (!props[componentProp] && currRoute.component[componentProp]) {
-        props[componentProp] = currRoute.component[componentProp];
-      }
-    });
-  }, lastRoute);
-  return props;
-};
-
-let renderRoute = (response, next, renderProps) => {
-  let routeProps = getPropsFromRoute(renderProps, ['requestInitialData']);
-  if (routeProps.requestInitialData) {
-    routeProps.requestInitialData().then((data) => {
-      let handleCreateElement = (Component, props) => {
-        return (<Component initialData={data} {...props} />);
-      }
-      const markup = renderToString(<RouterContext createElement={handleCreateElement} {...renderProps} />);
-
-      response.render("index", {
-        title: "Mind: Ideas",
-        initialData: JSON.stringify(data),
-        markup: markup
-      });
-    }).catch((err) => next(err));
-  } else {
-    response.render("index", {
-      title: "Mind: Ideas",
-      initialData: null,
-      markup: renderToString(<RouterContext {...renderProps} />)
-    });
-  }
-};
-
 router.get("*", (request, response, next) => {
   match({ routes, location: request.url }, (error, redirectLocation, renderProps) => {
     if (error) { 
@@ -62,5 +25,41 @@ router.get("*", (request, response, next) => {
     response.status(404).send("Not found");
   });
 });
+
+function getPropsFromRoute({routes}, componentProps) {
+  let props = {};
+  const lastRoute = routes[routes.length - 1];
+  routes.reduceRight((prevRoute, currRoute) => {
+    componentProps.forEach(componentProp => {
+      if (!props[componentProp] && currRoute.component[componentProp]) {
+        props[componentProp] = currRoute.component[componentProp];
+      }
+    });
+  }, lastRoute);
+  return props;
+}
+
+function renderRoute(response, next, renderProps) {
+  const title = "Mind: Ideas";
+  const routeProps = getPropsFromRoute(renderProps, ['requestInitialData']);
+  if (routeProps.requestInitialData) {
+    routeProps.requestInitialData().then((data) => {
+      const handleCreateElement = (Component, props) => (<Component initialData={data} {...props} />);
+      const markup = renderToString(<RouterContext createElement={handleCreateElement} {...renderProps} />);
+
+      response.render("index", {
+        title: title,
+        initialData: JSON.stringify(data),
+        markup: markup
+      });
+    }).catch((err) => next(err));
+  } else {
+    response.render("index", {
+      title: title,
+      initialData: null,
+      markup: renderToString(<RouterContext {...renderProps} />)
+    });
+  }
+}
 
 module.exports = router;

@@ -7,6 +7,6 @@ import Details from "./components/details";
 export default (
   <Route path="/" component={App}>
     <IndexRoute component={Root} />
-    <Route path="idea" component={Details} />
+    <Route path="idea/:id" component={Details} />
   </Route>
 );

@@ -3,8 +3,8 @@ body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
-a {
-  color: #00B7FF;
+a, a:hover, a:focus, a:active {
+  color: white;
 }
 
 .button {
@@ -45,10 +45,6 @@ a {
   padding: 10px 8px 4px 8px;
   margin-top: 10px;
   vertical-align: top;
-}
-
-.idea a {
-  color: white;
 }
 
 .idea .relationship {
