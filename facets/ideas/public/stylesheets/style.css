@@ -47,6 +47,10 @@ a {
   vertical-align: top;
 }
 
+.idea a {
+  color: white;
+}
+
 .idea .relationship {
   margin-bottom: 7px;
 }

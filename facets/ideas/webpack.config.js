@@ -10,7 +10,7 @@ module.exports = [{
   devtool: "eval-source-map",
   module: {
     loaders: [
-      { test: /\.jsx?$/, loader: "babel-loader"}
+      { test: /\.jsx?$/, loader: "babel-loader", exclude: /node_modules/ }
     ]
   },
   resolve: {

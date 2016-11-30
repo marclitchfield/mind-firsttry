@@ -1,5 +1,6 @@
 import React from "react";
 import moment from "moment";
+import { Link } from "react-router";
 
 export default class Idea extends React.Component {
   constructor(props) {
@@ -12,6 +13,7 @@ export default class Idea extends React.Component {
   }
 
   toggleChildren() {
+    console.log('toggleChildren');
     this.setState({
       childrenVisible: !this.state.childrenVisible
     });
@@ -21,7 +23,7 @@ export default class Idea extends React.Component {
     const created = this.props.idea.created || Date.now();
     return (
       <div className="idea" onClick={this.toggleChildren}>
-        <div>{this.props.idea.body}</div>
+        <Link to="/idea">{this.props.idea.body}</Link>
         <div className="created">{moment(created).fromNow()}</div>
         { 
           this.state.childrenVisible ?

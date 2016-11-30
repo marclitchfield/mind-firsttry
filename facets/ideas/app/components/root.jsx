@@ -3,14 +3,38 @@ import Idea from "./idea";
 import Relationships from "./relationships";
 import Submit from "./submit";
 import _ from "lodash/core";
+import IdeasRepo from "../../data/ideas";
 
-export default class Root extends React.Component {
+const repo = new IdeasRepo();
+
+class Root extends React.Component {
   constructor(props) {
     super(props);
+    this.state = Object.assign({
+      ideas: []
+    }, props.initialData || {});
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  componentWillMount() {
+  }
+
+  componentDidMount() {
+    if (!this.props.initialData) {
+      Root.requestInitialData().then(data => {
+        this.setState(data);
+      });
+    }
+  }
+
+  handleSubmit(idea) {
+    this.setState({
+      ideas: [...this.state.ideas, idea]
+    })
   }
 
   render() {
-    var sortedIdeas = _.sortBy(this.props.ideas, 'created');
+    var sortedIdeas = _.sortBy(this.state.ideas, 'created');
     return (
       <div className="root">
         <div className="ideas">
@@ -20,8 +44,12 @@ export default class Root extends React.Component {
             </Idea>
           )}
         </div>
-        <Submit onSubmit={this.props.onSubmit} />
+        <Submit onSubmit={this.handleSubmit} />
       </div>
     );
   }
 }
+
+Root.requestInitialData = () => repo.rootIdeas().then(ideas => { return { ideas: ideas } });
+
+export default Root;
