@@ -3,12 +3,9 @@ import React from "react";
 import { renderToString } from "react-dom/server";
 import { match, RouterContext } from "react-router";
 import Root from "../app/components/root";
-import IdeasRepo from "../data/ideas";
 import routes from "../app/routes";
 
 const router = express.Router();
-const repo = new IdeasRepo();
-
 const RootFactory = React.createFactory(Root);
 
 router.get("*", (request, response, next) => {
@@ -26,6 +23,31 @@ router.get("*", (request, response, next) => {
   });
 });
 
+function renderRoute(response, next, renderProps) {
+  getRenderedMarkup(renderProps).then(({ markup, initialData }) => {
+      response.render("index", {
+        title: "Mind: Ideas",
+        initialData: JSON.stringify(initialData),
+        markup: markup
+      });
+  }).catch(err => next(err));
+}
+
+function getRenderedMarkup(renderProps) {
+  const routeProps = getPropsFromRoute(renderProps, ['requestInitialData']);
+  if (routeProps.requestInitialData) {
+    return routeProps.requestInitialData().then(initialData => {
+      const handleCreateElement = (Component, props) => (<Component initialData={initialData} {...props} />);
+      const markup = renderToString(<RouterContext createElement={handleCreateElement} {...renderProps} />);
+      return new Promise((resolve, reject) => resolve({ markup, initialData }));
+    });
+  }
+  return new Promise((resolve, reject) => resolve({ 
+    markup: renderToString(<RouterContext {...renderProps} />), 
+    initialData: {} 
+  }));
+}
+
 function getPropsFromRoute({routes}, componentProps) {
   let props = {};
   const lastRoute = routes[routes.length - 1];
@@ -37,29 +59,6 @@ function getPropsFromRoute({routes}, componentProps) {
     });
   }, lastRoute);
   return props;
-}
-
-function renderRoute(response, next, renderProps) {
-  const title = "Mind: Ideas";
-  const routeProps = getPropsFromRoute(renderProps, ['requestInitialData']);
-  if (routeProps.requestInitialData) {
-    routeProps.requestInitialData().then((data) => {
-      const handleCreateElement = (Component, props) => (<Component initialData={data} {...props} />);
-      const markup = renderToString(<RouterContext createElement={handleCreateElement} {...renderProps} />);
-
-      response.render("index", {
-        title: title,
-        initialData: JSON.stringify(data),
-        markup: markup
-      });
-    }).catch((err) => next(err));
-  } else {
-    response.render("index", {
-      title: title,
-      initialData: null,
-      markup: renderToString(<RouterContext {...renderProps} />)
-    });
-  }
 }
 
 module.exports = router;

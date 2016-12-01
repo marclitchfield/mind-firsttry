@@ -3,9 +3,7 @@ import Idea from "./idea";
 import Relationships from "./relationships";
 import Submit from "./submit";
 import _ from "lodash/core";
-import IdeasRepo from "../../data/ideas";
-
-const repo = new IdeasRepo();
+import { ideasRepo } from "../../repos/ideas";
 
 class Root extends React.Component {
   constructor(props) {
@@ -14,9 +12,6 @@ class Root extends React.Component {
       ideas: []
     }, props.initialData || {});
     this.handleSubmit = this.handleSubmit.bind(this);
-  }
-
-  componentWillMount() {
   }
 
   componentDidMount() {
@@ -50,6 +45,6 @@ class Root extends React.Component {
   }
 }
 
-Root.requestInitialData = () => repo.rootIdeas().then(ideas => { return { ideas: ideas } });
+Root.requestInitialData = () => ideasRepo.rootIdeas().then(ideas => { return { ideas: ideas } });
 
 export default Root;
