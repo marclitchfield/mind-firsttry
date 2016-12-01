@@ -13,7 +13,6 @@ export default class Idea extends React.Component {
   }
 
   toggleChildren() {
-    console.log('toggleChildren');
     this.setState({
       childrenVisible: !this.state.childrenVisible
     });
@@ -23,7 +22,7 @@ export default class Idea extends React.Component {
     const created = this.props.idea.created || Date.now();
     return (
       <div className="idea" onClick={this.toggleChildren}>
-        <Link to={"/idea/"+this.props.idea.id}>{this.props.idea.body}</Link>
+        <Link to={"idea/" + this.props.idea.id}>{this.props.idea.body}</Link>
         <div className="created">{moment(created).fromNow()}</div>
         { 
           this.state.childrenVisible ?

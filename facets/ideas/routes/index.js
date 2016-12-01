@@ -2,7 +2,7 @@ import express from "express";
 import React from "react";
 import { renderToString } from "react-dom/server";
 import { match, RouterContext } from "react-router";
-import Root from "../app/components/root";
+import Root from "../app/containers/root";
 import routes from "../app/routes";
 
 const router = express.Router();

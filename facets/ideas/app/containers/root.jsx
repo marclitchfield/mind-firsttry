@@ -1,8 +1,8 @@
 import React from "react";
-import Idea from "./idea";
-import Relationships from "./relationships";
-import Submit from "./submit";
 import _ from "lodash/core";
+import Idea from "../components/idea";
+import Relationships from "../components/relationships";
+import Submit from "../components/submit";
 import { ideasRepo } from "../../repos/ideas";
 
 class Root extends React.Component {
@@ -24,7 +24,7 @@ class Root extends React.Component {
 
   handleSubmit(idea) {
     this.setState({
-      ideas: [...this.state.ideas, idea]
+      ideas: this.state.ideas.concat(idea)
     })
   }
 

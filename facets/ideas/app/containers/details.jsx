@@ -1,4 +1,5 @@
 import React from "react";
+import Idea from "../components/idea";
 
 export default class Details extends React.Component {
   constructor(props) {
@@ -7,9 +8,7 @@ export default class Details extends React.Component {
 
   render() {
     return (
-      <div className="details">
-        <h1>These are some details</h1>
-      </div>
+      <div>Will show idea {this.props.params.id}</div>
     );
   }
 }

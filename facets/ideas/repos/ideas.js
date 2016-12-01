@@ -12,29 +12,8 @@ class IdeasRepo {
     return request
       .post(config.api_url + "/query/ideas.facet", { "root.idea": properties })
       .then((response) => {
-        return [].concat(response.data.me["root.idea"] || []).map((idea) => this.to_idea(idea));
+        return [].concat(response.data.me["root.idea"] || []).map((idea) => toIdea(idea));
       });
-  }
-
-  to_idea(idea) {
-    return {
-      id: idea._xid_,
-      body: idea.body,
-      created: idea['created.at'],
-      relationships: this.relationships_for(idea)
-    };
-  }
-
-  relationships_for(idea) {
-    return supportedPredicates.reduce((relationships, p) => {
-      const related = [].concat(idea[p] || []);
-      return relationships.concat(related.map(i => {
-        return {
-          predicate: p,
-          idea: this.to_idea(i)
-        };
-      }));
-    }, []);
   }
 
   submitRootIdea(idea) {
@@ -45,7 +24,28 @@ class IdeasRepo {
         return Object.assign(properties, { id: response.data });
       });
   }
-  
+
+}
+
+function toIdea(idea) {
+  return {
+    id: idea._xid_,
+    body: idea.body,
+    created: idea['created.at'],
+    relationships: relationshipsFor(idea)
+  };
+}
+
+function relationshipsFor(idea) {
+  return supportedPredicates.reduce((relationships, p) => {
+    const related = [].concat(idea[p] || []);
+    return relationships.concat(related.map(i => {
+      return {
+        predicate: p,
+        idea: toIdea(i)
+      };
+    }));
+  }, []);
 }
 
 export let ideasRepo = new IdeasRepo();

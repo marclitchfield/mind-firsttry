@@ -1,6 +1,6 @@
 import React from "react";
-import Root from "./root";
 import { Link } from "react-router";
+import Root from "../containers/root";
 
 export default class Header extends React.Component {
   render() {
