@@ -1,5 +1,6 @@
 import React from "react";
-import Header from "../components/header";
+import { Router, browserHistory } from "react-router";
+import Header from "./Header";
 
 export default class App extends React.Component {
   constructor(props) {
@@ -10,9 +11,7 @@ export default class App extends React.Component {
     return (
       <div className="app">
         <Header />
-        <div className="context">
-          {this.props.children}
-        </div>
+        {this.props.children}
       </div>
     );
   }

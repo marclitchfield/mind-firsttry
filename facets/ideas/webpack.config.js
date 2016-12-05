@@ -10,7 +10,14 @@ module.exports = [{
   devtool: "eval-source-map",
   module: {
     loaders: [
-      { test: /\.jsx?$/, loader: "babel-loader", exclude: /node_modules/ }
+      { 
+        test: /\.jsx?$/, 
+        exclude: /node_modules/,
+        loader: "babel-loader", 
+        query: {
+          plugins: ['transform-decorators-legacy']
+        }
+      }
     ]
   },
   resolve: {

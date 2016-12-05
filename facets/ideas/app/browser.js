@@ -1,20 +1,18 @@
 import React from "react";
+import { Provider } from "react-redux";
 import { render } from "react-dom";
 import { Router, browserHistory } from "react-router";
 import routes from "./routes";
+import createStore from "./store";
 
-function handleCreateElement(Component, props) {
-  if (Component.hasOwnProperty("requestInitialData")) {
-    let initialData = document.getElementById("initial-data").textContent;
-    if (initialData.length > 0) {
-      initialData = JSON.parse(initialData);
-    }
-    return <Component initialData={initialData} {...props} />;
-  } else {
-    return <Component {...props} />;
-  }
-}
+const initialState = JSON.parse(document.getElementById("initial-state").textContent);
+const store = createStore(initialState);
 
 render((
-  <Router history={browserHistory} createElement={handleCreateElement}>{routes}</Router>
+  <Provider store={store}>
+    <Router history={browserHistory}>{routes}</Router>
+  </Provider>
 ), document.getElementById("content"));
+
+// For debugging. Safe to remove.
+window.store = store;

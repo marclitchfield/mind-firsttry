@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router";
-import Root from "../containers/root";
+import IdeaList from "./IdeaList";
 
 export default class Header extends React.Component {
   render() {

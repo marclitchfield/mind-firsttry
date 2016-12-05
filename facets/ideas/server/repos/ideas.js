@@ -1,16 +1,16 @@
 import request from "axios";
-import config from "../config";
+import config from "../../config";
 
 const standardProperties = ["body", "created.at"];
 const supportedPredicates = ["therefore", "because"]
 
 class IdeasRepo {
 
-  rootIdeas() {
+  ideas(id) {
     const node = () => standardProperties.reduce((props, p) => Object.assign({}, props, { [p]: true }), {});
     const properties = supportedPredicates.reduce((props, p) => Object.assign({}, props, { [p]: node() }), node());
     return request
-      .post(config.api_url + "/query/ideas.facet", { "root.idea": properties })
+      .post(config.api_url + "/query/" + (id || "ideas.facet"), { "root.idea": properties })
       .then((response) => {
         return [].concat(response.data.me["root.idea"] || []).map((idea) => toIdea(idea));
       });
@@ -48,4 +48,4 @@ function relationshipsFor(idea) {
   }, []);
 }
 
-export let ideasRepo = new IdeasRepo();
+export default new IdeasRepo();

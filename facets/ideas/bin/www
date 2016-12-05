@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 require("babel-register")({
   presets: ["es2015", "react"],
+  plugins: ["transform-decorators-legacy"]
 });
 
-var app = require('../app');
+var app = require('../server/server');
 
 app.set('port', process.env.PORT || 9010);
 

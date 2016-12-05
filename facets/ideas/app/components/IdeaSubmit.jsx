@@ -1,7 +1,7 @@
 import React from "react";
 import request from "axios";
 
-export default class Submit extends React.Component {
+export default class IdeaSubmit extends React.Component {
   constructor(props) {
     super(props);
     this.state = {

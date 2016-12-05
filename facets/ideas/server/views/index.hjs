@@ -8,7 +8,7 @@
   </head>
   <body>
     <div id="content">{{{markup}}}</div>
-    <script id="initial-data" type="application/json">{{{initialData}}}</script>
-    <script src="scripts/bundle.js"></script>
+    <script id="initial-state" type="application/json">{{{initialState}}}</script>
+    <script src="/scripts/bundle.js"></script>
   </body>
 </html>
