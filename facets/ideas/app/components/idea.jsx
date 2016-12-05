@@ -38,7 +38,7 @@ export default class Idea extends React.Component {
     const sortedChildren = _.sortBy(this.props.relationships, (rel) => rel.idea.created);
     return (
       <div className="idea" onClick={this.toggleChildren}>
-        <Link to={"idea/" + this.props.idea.id}>{this.props.idea.body}</Link>
+        <Link to={"/idea/" + this.props.idea.id}>{this.props.idea.body}</Link>
         <div className="created">{moment(created).fromNow()}</div>
         {this.renderChildren()}
       </div>

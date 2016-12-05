@@ -1,25 +1,23 @@
 import request from "axios";
 import config from "../../config";
+import join from "url-join";
 
 const standardProperties = ["body", "created.at"];
 const supportedPredicates = ["therefore", "because"]
+const rootSubject = "ideas.facet";
+const rootPredicate = "root.idea";
 
 class IdeasRepo {
 
   ideas(id) {
-    const node = () => standardProperties.reduce((props, p) => Object.assign({}, props, { [p]: true }), {});
-    const properties = supportedPredicates.reduce((props, p) => Object.assign({}, props, { [p]: node() }), node());
-    return request
-      .post(config.api_url + "/query/" + (id || "ideas.facet"), { "root.idea": properties })
-      .then((response) => {
-        return [].concat(response.data.me["root.idea"] || []).map((idea) => toIdea(idea));
-      });
+    return id ? ideaQuery(id) : rootQuery();
   }
 
-  submitRootIdea(idea) {
+  submitIdea(idea, parent, predicate) {
     const properties = { is: 'idea', body: idea.body };
+    const resource = parent === undefined ? join(rootSubject, rootPredicate) : join(parent, predicate);
     return request
-      .post(config.api_url + "/graph/ideas.facet/root.idea", properties)
+      .post(join(config.api_url, "graph", resource), properties)
       .then((response) => {
         return Object.assign(properties, { id: response.data });
       });
@@ -27,24 +25,41 @@ class IdeasRepo {
 
 }
 
-function toIdea(idea) {
+function rootQuery() {
+  return request
+    .post(join(config.api_url, "query", rootSubject), { [rootPredicate]: queryProperties() })
+    .then((response) => {
+      return [].concat(response.data.me[rootPredicate] || []).map((idea) => toIdea(idea));
+    });
+}
+
+function ideaQuery(id) {
+  return request
+    .post(join(config.api_url, "query", id), queryProperties())
+    .then((response) => {
+      return relatedIdeas(response.data.me)
+    });
+}
+
+function queryProperties() {
+  const node = () => standardProperties.reduce((props, p) => Object.assign({}, props, { [p]: true }), {});
+  return supportedPredicates.reduce((props, p) => Object.assign({}, props, { [p]: node() }), node());
+}
+
+function toIdea(idea, predicate) {
   return {
     id: idea._xid_,
     body: idea.body,
     created: idea['created.at'],
-    relationships: relationshipsFor(idea)
+    predicate,
+    related: relatedIdeas(idea)
   };
 }
 
-function relationshipsFor(idea) {
+function relatedIdeas(idea) {
   return supportedPredicates.reduce((relationships, p) => {
     const related = [].concat(idea[p] || []);
-    return relationships.concat(related.map(i => {
-      return {
-        predicate: p,
-        idea: toIdea(i)
-      };
-    }));
+    return relationships.concat(related.map(i => toIdea(i, p)));
   }, []);
 }
 

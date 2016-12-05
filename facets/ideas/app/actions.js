@@ -10,9 +10,10 @@ export function fetchIdeas(id) {
   };
 }
 
-export function submitIdea(idea) {
+export function submitIdea(idea, parent, predicate) {
+  const url = "/api/ideas/" + (parent ? parent + "/" + predicate : ""); 
   return {
     type: "SUBMIT_IDEA",
-    payload: axios.post("/api/ideas", { body: idea.body }).then(response => response.data)
+    payload: axios.post(url, { body: idea.body }).then(response => response.data)
   }
 }

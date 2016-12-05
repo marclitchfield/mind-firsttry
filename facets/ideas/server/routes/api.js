@@ -9,8 +9,8 @@ router.get("/ideas/:id?", function(req, res) {
     .catch((err) => res.err(err));
 });
 
-router.post("/ideas", function(req, res) {
-  ideasRepo.submitRootIdea(req.body)
+router.post("/ideas/:id?/:predicate?", function(req, res) {
+  ideasRepo.submitIdea(req.body, req.params.id, req.params.predicate)
     .then((idea) => res.json(idea))
     .catch((err) => res.err(err));
 });

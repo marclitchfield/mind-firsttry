@@ -7,6 +7,6 @@ import _ from "lodash/core";
 export default (
   <Route path="/" component={App}>
     <IndexRoute component={IdeaList} />
-    <Route path="idea/:id" component={IdeaList} />
+    <Route path="/idea/:id" component={IdeaList} />
   </Route>
 );

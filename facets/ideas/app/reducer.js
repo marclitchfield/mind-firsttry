@@ -4,8 +4,7 @@ export default handleActions({
 
   FETCH_IDEAS_PENDING: (state, action) => {
     return Object.assign({}, state, {
-      selected: action.meta.selected,
-      ideas: []
+      selected: action.meta.selected
     });
   },
 

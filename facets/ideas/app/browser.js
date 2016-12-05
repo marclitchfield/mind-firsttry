@@ -13,6 +13,3 @@ render((
     <Router history={browserHistory}>{routes}</Router>
   </Provider>
 ), document.getElementById("content"));
-
-// For debugging. Safe to remove.
-window.store = store;

@@ -10,7 +10,7 @@ import { fetchIdeas } from "../actions";
   return { 
     ideas: store.ideas,
     selected: store.selected
-  }; 
+  };
 })
 export default class IdeaList extends React.Component {
   componentWillReceiveProps(nextProps) {
