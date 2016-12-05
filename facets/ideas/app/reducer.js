@@ -20,7 +20,7 @@ export default handleActions({
     return Object.assign({}, state, {
       ideas: state.ideas.concat(action.payload)
     });
-  },
+  }
 
 }, {
   selected: undefined,

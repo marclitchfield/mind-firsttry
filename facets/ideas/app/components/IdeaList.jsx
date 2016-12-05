@@ -24,8 +24,9 @@ export default class IdeaList extends React.Component {
   render() {
     var sortedIdeas = _.sortBy(this.props.ideas, 'created');
     return (
-      <div className="root">
-        <div className="ideas">
+      <div className="idea-list">
+        {this.props.selected ? <Idea idea={this.props.selected} /> : null}
+        <div className="related-ideas">
           {sortedIdeas.map(idea => <Idea key={idea.id} idea={idea} />)}
         </div>
         <IdeaSubmit onSubmit={this.handleSubmit} />

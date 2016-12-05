@@ -15,7 +15,7 @@ a, a:hover, a:focus, a:active {
   background-color: darkslategray
 }
 
-.root {
+.idea-list {
   padding: 10px;
 }
 
@@ -24,7 +24,7 @@ a, a:hover, a:focus, a:active {
 }
 
 .idea {
-  background-color: darkslategrey;
+  background-color: darkslategray;
   color: white;
   padding: 6px;
   margin-bottom: 4px;
@@ -36,25 +36,10 @@ a, a:hover, a:focus, a:active {
   font-size: .6em;
 }
 
-.idea .relationships {
-  background-color: white;
-  border: 1px solid black;
-  border-radius: .2em;
-  color: darkslategray;
-  font-size: .9em;
-  padding: 10px 8px 4px 8px;
-  margin-top: 10px;
-  vertical-align: top;
-}
-
-.idea .relationship {
-  margin-bottom: 7px;
-}
-
-.idea .relationships .predicate {
-  vertical-align: top;
-  margin-top: -2px;
+.idea .predicate {
   display: inline-block;
+  margin-right: 4px;
+  vertical-align: top;
   border: 1px solid black;
   border-radius: .2em;
   background-color: darkorange;
@@ -62,11 +47,8 @@ a, a:hover, a:focus, a:active {
   color: black;
   text-align: center;
   font-size: .9em;
-  padding: 2px 4px;
 }
 
-.idea .relationships .body {
-  padding-left: 6px;
-  display: inline-block;
-  width: 80%;
+.idea .body {
+  display: inline;
 }

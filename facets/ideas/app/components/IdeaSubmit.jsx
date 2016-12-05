@@ -16,7 +16,8 @@ export default class IdeaSubmit extends React.Component {
   }
 
   submit(event) {
-    this.props.dispatch(submitIdea({ body: this.state.body }, this.props.selected, "because"));
+    const selectedId = (this.props.selected || {}).id;
+    this.props.dispatch(submitIdea({ body: this.state.body }, selectedId, "because"));
     this.setState({ body: '' });
     event.preventDefault();
   }

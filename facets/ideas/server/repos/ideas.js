@@ -31,7 +31,7 @@ class IdeasRepo {
     return request
       .post(join(config.api_url, "graph", resource), properties)
       .then((response) => {
-        return Object.assign(properties, { id: response.data });
+        return Object.assign(properties, { id: response.data, predicate: predicate });
       });
   }
 
