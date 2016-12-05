@@ -13,21 +13,10 @@ import { fetchIdeas } from "../actions";
   }; 
 })
 export default class IdeaList extends React.Component {
-  constructor(props) {
-    super(props);
-    this.handleSubmit = this.handleSubmit.bind(this);
-  }
-
   componentWillReceiveProps(nextProps) {
     if (nextProps.selected != nextProps.params.id) {
       nextProps.dispatch(fetchIdeas(nextProps.params.id));
     }
-  }
-
-  handleSubmit(idea) {
-    // this.setState({
-    //   ideas: this.state.ideas.concat(idea)
-    // })
   }
 
   render() {

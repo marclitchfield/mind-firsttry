@@ -1,13 +1,12 @@
 import React from "react";
-import request from "axios";
+import { connect } from "react-redux";
+import { submitIdea } from "../actions";
 
+@connect()
 export default class IdeaSubmit extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      body: ''
-    };
-
+    this.state = { body: '' };
     this.handleChange = this.handleChange.bind(this);
     this.submit = this.submit.bind(this);
   }
@@ -17,11 +16,8 @@ export default class IdeaSubmit extends React.Component {
   }
 
   submit(event) {
-    request.post("/api/ideas", { body: this.state.body })
-      .then((response) => {
-        this.props.onSubmit(response.data);
-        this.setState({ body: '' });
-      });
+    this.props.dispatch(submitIdea({ body: this.state.body }));
+    this.setState({ body: '' });
     event.preventDefault();
   }
 
