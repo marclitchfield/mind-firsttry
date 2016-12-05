@@ -10,18 +10,18 @@ import ideasRepo from "../repos/ideas";
 const router = express.Router();
 
 router.get("/", (request, response, next) => {
-  renderIndex(request, response, next, () => ideasRepo.ideas().then(ideas => {
+  renderIndex(request, response, next, () => ideasRepo.getIdeas().then(ideas => {
     return {
-      ideas: ideas
+      ideas
     };
   }));
 });
 
 router.get("/idea/:id", (request, response, next) => {
-  renderIndex(request, response, next, () => ideasRepo.ideas(request.params.id).then(ideas => {
+  renderIndex(request, response, next, () => ideasRepo.getIdea(request.params.id).then(idea => {
     return {
-      ideas: ideas,
-      selected: request.params.id
+      selected: idea,
+      ideas: idea.related
     };
   }));
 });

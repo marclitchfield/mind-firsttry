@@ -9,8 +9,20 @@ const rootPredicate = "root.idea";
 
 class IdeasRepo {
 
-  ideas(id) {
-    return id ? ideaQuery(id) : rootQuery();
+  getIdeas() {
+    return request
+      .post(join(config.api_url, "query", rootSubject), { [rootPredicate]: queryProperties() })
+      .then((response) => {
+        return [].concat(response.data.me[rootPredicate] || []).map((idea) => toIdea(idea));
+      });
+  }
+
+  getIdea(id) {
+    return request
+      .post(join(config.api_url, "query", id), queryProperties())
+      .then((response) => {
+        return toIdea(response.data.me)
+      });
   }
 
   submitIdea(idea, parent, predicate) {
@@ -23,22 +35,6 @@ class IdeasRepo {
       });
   }
 
-}
-
-function rootQuery() {
-  return request
-    .post(join(config.api_url, "query", rootSubject), { [rootPredicate]: queryProperties() })
-    .then((response) => {
-      return [].concat(response.data.me[rootPredicate] || []).map((idea) => toIdea(idea));
-    });
-}
-
-function ideaQuery(id) {
-  return request
-    .post(join(config.api_url, "query", id), queryProperties())
-    .then((response) => {
-      return relatedIdeas(response.data.me)
-    });
 }
 
 function queryProperties() {

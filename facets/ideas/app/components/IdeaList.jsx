@@ -4,7 +4,7 @@ import { Link } from "react-router";
 import Idea from "./Idea";
 import IdeaSubmit from "./IdeaSubmit";
 import _ from "lodash/core";
-import { fetchIdeas } from "../actions";
+import { fetchIdea, fetchRootIdeas } from "../actions";
 
 @connect(store => { 
   return { 
@@ -14,8 +14,10 @@ import { fetchIdeas } from "../actions";
 })
 export default class IdeaList extends React.Component {
   componentWillReceiveProps(nextProps) {
-    if (nextProps.selected != nextProps.params.id) {
-      nextProps.dispatch(fetchIdeas(nextProps.params.id));
+    const nextId = nextProps.params.id;
+    const selectedId = (nextProps.selected || {}).id;
+    if (nextId !== selectedId) {
+      return nextProps.dispatch(nextId ? fetchIdea(nextId) : fetchRootIdeas());
     }
   }
 

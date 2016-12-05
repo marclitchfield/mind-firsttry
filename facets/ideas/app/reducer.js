@@ -2,15 +2,17 @@ import { handleActions } from "redux-actions";
 
 export default handleActions({
 
-  FETCH_IDEAS_PENDING: (state, action) => {
+  FETCH_ROOT_IDEAS_FULFILLED: (state, action) => {
     return Object.assign({}, state, {
-      selected: action.meta.selected
+      selected: undefined,
+      ideas: action.payload
     });
   },
 
-  FETCH_IDEAS_FULFILLED: (state, action) => {
+  FETCH_IDEA_FULFILLED: (state, action) => {
     return Object.assign({}, state, {
-      ideas: action.payload
+      selected: action.payload,
+      ideas: action.payload.related
     });
   },
 
@@ -18,7 +20,7 @@ export default handleActions({
     return Object.assign({}, state, {
       ideas: state.ideas.concat(action.payload)
     });
-  }
+  },
 
 }, {
   selected: undefined,

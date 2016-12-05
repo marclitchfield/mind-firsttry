@@ -3,6 +3,7 @@ import { Route, IndexRoute } from "react-router";
 import App from "./components/App";
 import IdeaList from "./components/IdeaList";
 import _ from "lodash/core";
+import { shouldFetch } from "./actions";
 
 export default (
   <Route path="/" component={App}>
