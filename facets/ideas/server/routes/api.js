@@ -9,7 +9,7 @@ router.get("/ideas", (req, res) => {
     .catch((err) => res.err(err));
 });
 
-router.get("/ideas/:id?", (req, res) => {
+router.get("/ideas/:id", (req, res) => {
   ideasRepo.getIdea(req.params.id)
     .then((idea) => res.json(idea))
     .catch((err) => res.err(err));

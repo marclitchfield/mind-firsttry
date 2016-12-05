@@ -24,7 +24,7 @@ export default class IdeaList extends React.Component {
         <div className="related-ideas">
           {sortedIdeas.map(idea => <Idea key={idea.id} idea={idea} />)}
         </div>
-        <IdeaSubmit onSubmit={this.handleSubmit} />
+        <IdeaSubmit />
       </div>
     );
   }
