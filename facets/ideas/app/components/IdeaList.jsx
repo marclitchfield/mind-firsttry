@@ -6,26 +6,21 @@ import IdeaSubmit from "./IdeaSubmit";
 import _ from "lodash/core";
 import { fetchIdea, fetchRootIdeas } from "../actions";
 
-@connect(store => { 
-  return { 
-    ideas: store.ideas,
-    selected: store.selected
-  };
-})
+@connect(store => { return { selected: store.selected }; })
 export default class IdeaList extends React.Component {
   componentWillReceiveProps(nextProps) {
     const nextId = nextProps.params.id;
-    const selectedId = (nextProps.selected || {}).id;
+    const selectedId = nextProps.selected.id;
     if (nextId !== selectedId) {
       return nextProps.dispatch(nextId ? fetchIdea(nextId) : fetchRootIdeas());
     }
   }
 
   render() {
-    var sortedIdeas = _.sortBy(this.props.ideas, 'created');
+    var sortedIdeas = _.sortBy(this.props.selected.related, 'created');
     return (
       <div className="idea-list">
-        {this.props.selected ? <Idea idea={this.props.selected} /> : null}
+        {this.props.selected.id ? <Idea idea={this.props.selected} /> : null}
         <div className="related-ideas">
           {sortedIdeas.map(idea => <Idea key={idea.id} idea={idea} />)}
         </div>

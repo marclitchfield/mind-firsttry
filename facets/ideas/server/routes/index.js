@@ -12,7 +12,7 @@ const router = express.Router();
 router.get("/", (request, response, next) => {
   renderIndex(request, response, next, () => ideasRepo.getIdeas().then(ideas => {
     return {
-      ideas
+      selected: { related: ideas }
     };
   }));
 });
@@ -20,8 +20,7 @@ router.get("/", (request, response, next) => {
 router.get("/idea/:id", (request, response, next) => {
   renderIndex(request, response, next, () => ideasRepo.getIdea(request.params.id).then(idea => {
     return {
-      selected: idea,
-      ideas: idea.related
+      selected: idea
     };
   }));
 });

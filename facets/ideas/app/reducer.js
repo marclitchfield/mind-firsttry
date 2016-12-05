@@ -4,25 +4,25 @@ export default handleActions({
 
   FETCH_ROOT_IDEAS_FULFILLED: (state, action) => {
     return Object.assign({}, state, {
-      selected: undefined,
-      ideas: action.payload
+      selected: { related: action.payload }
     });
   },
 
   FETCH_IDEA_FULFILLED: (state, action) => {
     return Object.assign({}, state, {
-      selected: action.payload,
-      ideas: action.payload.related
+      selected: action.payload
     });
   },
 
   SUBMIT_IDEA_FULFILLED: (state, action) => {
     return Object.assign({}, state, {
-      ideas: state.ideas.concat(action.payload)
+      selected: Object.assign({}, state.selected, {
+        related: state.selected.related.concat(action.payload)
+      })
     });
   }
 
 }, {
-  selected: undefined,
+  selected: {},
   ideas: []
 });
