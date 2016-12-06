@@ -1,8 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
-import { submitIdea } from "../actions";
 
-@connect(store => { return { selected: store.selected }; })
 export default class IdeaSubmit extends React.Component {
   constructor(props) {
     super(props);
@@ -16,8 +13,7 @@ export default class IdeaSubmit extends React.Component {
   }
 
   submit(event) {
-    const selectedId = (this.props.selected || {}).id;
-    this.props.dispatch(submitIdea({ body: this.state.body }, selectedId, "because"));
+    this.props.onSubmit(this.state);
     this.setState({ body: '' });
     event.preventDefault();
   }
