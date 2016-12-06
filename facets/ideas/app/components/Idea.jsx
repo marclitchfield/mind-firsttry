@@ -1,7 +1,7 @@
 import React from "react";
 import moment from "moment";
 import { Link } from "react-router";
-import Predicate from "./predicate";
+import Predicate from "./Predicate";
 import _ from "lodash/core";
 
 export default class Idea extends React.Component {
