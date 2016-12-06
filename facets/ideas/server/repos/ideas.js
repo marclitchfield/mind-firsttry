@@ -1,9 +1,9 @@
 import request from "axios";
-import config from "../../config";
 import join from "url-join";
+import config from "../../config";
+import { supportedPredicates } from "../../app/constants";
 
 const standardProperties = ["body", "created.at"];
-const supportedPredicates = ["therefore", "because"]
 const rootSubject = "ideas.facet";
 const rootPredicate = "root.idea";
 
@@ -31,8 +31,9 @@ class IdeasRepo {
     return request
       .post(join(config.api_url, "graph", resource), properties)
       .then((response) => {
+        console.log('got response', response);
         return Object.assign(properties, { id: response.data, predicate: predicate });
-      });
+      })
   }
 
 }

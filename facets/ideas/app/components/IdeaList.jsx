@@ -23,18 +23,19 @@ export default class IdeaList extends React.Component {
 
   handleSubmit(idea) {
     const selectedId = (this.props.selected || {}).id;
-    this.props.dispatch(submitIdea(idea, selectedId, "because"));
+    this.props.dispatch(submitIdea(idea, selectedId, idea.predicate));
   }
 
   render() {
-    var sortedIdeas = _.sortBy(this.props.selected.related, 'created');
+    const sortedIdeas = _.sortBy(this.props.selected.related, 'created');
+    const providePredicate = this.props.selected.id !== undefined;
     return (
       <div className="idea-list">
         {this.props.selected.id ? <Idea idea={this.props.selected} /> : null}
         <div className="related-ideas">
           {sortedIdeas.map(idea => <Idea key={idea.id} idea={idea} />)}
         </div>
-        <IdeaSubmit onSubmit={this.handleSubmit} />
+        <IdeaSubmit providePredicate={providePredicate} onSubmit={this.handleSubmit} />
       </div>
     );
   }

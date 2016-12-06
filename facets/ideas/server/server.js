@@ -4,6 +4,7 @@ import favicon from 'serve-favicon';
 import logger from 'morgan';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
+import expressPromise from 'express-promise';
 
 import indexRoutes from './routes/index';
 import apiRoutes from './routes/api';
@@ -21,6 +22,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../public')));
+app.use(expressPromise())
 
 app.use('/', indexRoutes);
 app.use('/api', apiRoutes);
