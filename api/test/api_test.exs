@@ -4,10 +4,11 @@ defmodule ApiTest do
   alias MindRouter, as: Router
   doctest Api
   @opts Router.init([])
-  @test_subject "tests"
-  @test_predicate "pred"
-  @test_object_type "concept"
-  @test_body "Test Node Body"
+  @default_subject "tests"
+  @default_predicate "pred"
+  @default_type "concept"
+  @default_body "Test Node Body"
+  @default_props [is: @default_type, body: @default_body]
   @special_chars ~s(sq:' dq:" bs:\\ # lb:} rb:{ amp:&)
   
   test "initialize" do
@@ -22,7 +23,7 @@ defmodule ApiTest do
 
   test "post related node" do
     id = post_node().resp_body
-    response = post_related_node(id)
+    response = post_node(subject: id)
     assert response.status == 200
   end
 
@@ -30,71 +31,79 @@ defmodule ApiTest do
     id = post_node().resp_body
     response = query_node(id, %{"body" => true, "created.at" => true}) |> to_json
     assert response["me"]["_xid_"] == id
-    assert response["me"]["body"] == @test_body
+    assert response["me"]["body"] == @default_body
     assert response["me"]["created.at"] != nil
   end
 
+  @tag :wip
   test "node has valid 'is' predicate" do
     id = post_node().resp_body
     response = query_node(id, %{"body" => true, "is" => %{}}) |> to_json
-    assert response["me"]["is"]["_xid_"] == @test_object_type
+    assert response["me"]["is"]["_xid_"] == @default_type
   end
 
   test "get related nodes" do
     id_subject = post_node().resp_body
-    id_object = post_related_node(id_subject).resp_body
-    response = query_node(id_subject, %{@test_predicate => %{}}) |> to_json
+    id_object = post_node(subject: id_subject, props: @default_props).resp_body
+    response = query_node(id_subject, %{@default_predicate => %{}}) |> to_json
     assert response["me"]["_xid_"] == id_subject
-    assert response["me"][@test_predicate]["_xid_"] == id_object
+    assert response["me"][@default_predicate]["_xid_"] == id_object
   end
 
   test "get multiple related nodes" do
     id_subject = post_node().resp_body
-    id_object1 = post_related_node(id_subject).resp_body
-    id_object2 = post_related_node(id_subject).resp_body
-    response = query_node(id_subject, %{@test_predicate => %{}}) |> to_json
-    assert response["me"][@test_predicate] |> Enum.any?(fn x -> x["_xid_"] == id_object1 end)
-    assert response["me"][@test_predicate] |> Enum.any?(fn x -> x["_xid_"] == id_object2 end)
+    id_object1 = post_node(subject: id_subject).resp_body
+    id_object2 = post_node(subject: id_subject).resp_body
+    response = query_node(id_subject, %{@default_predicate => %{}}) |> to_json
+    assert response["me"][@default_predicate] |> Enum.any?(fn x -> x["_xid_"] == id_object1 end)
+    assert response["me"][@default_predicate] |> Enum.any?(fn x -> x["_xid_"] == id_object2 end)
   end
+
+  test "post new node with links to other nodes" do
+    id_object1 = post_node().resp_body
+    id_object2 = post_node().resp_body
+    id_subject = post_node(props: [links: [link1: id_object1, link2: id_object2]] ++ @default_props).resp_body
+    response = query_node(id_subject, %{"link1" => %{}, "link2" => %{}}) |> to_json
+    assert response["me"]["link1"] != nil
+    assert response["me"]["link2"] != nil
+  end  
 
   test "link existing nodes" do
     id_subject = post_node().resp_body
     id_object = post_node().resp_body
-    post_node(id_subject, @test_predicate, id_object, %{"newprop" => "new"})
-    response = query_node(id_subject, %{@test_predicate => %{"newprop" => true}}) |> to_json
-    assert response["me"][@test_predicate]["_xid_"] == id_object
-    assert response["me"][@test_predicate]["newprop"] == "new"
+    post_link(id_subject, @default_predicate, id_object, [newprop: "new"])
+    response = query_node(id_subject, %{@default_predicate => %{"newprop" => true}}) |> to_json
+    assert response["me"][@default_predicate]["_xid_"] == id_object
+    assert response["me"][@default_predicate]["newprop"] == "new"
   end
 
   test "delete relationship" do
     id_subject = post_node().resp_body
-    id_object = post_related_node(id_subject).resp_body
-    delete_link(id_subject, @test_predicate, id_object)
-    response = query_node(id_subject, %{@test_predicate => %{}}) |> to_json
-    assert response["me"][@test_predicate] == nil
+    id_object = post_node(subject: id_subject).resp_body
+    delete_link(id_subject, @default_predicate, id_object)
+    response = query_node(id_subject, %{@default_predicate => %{}}) |> to_json
+    assert response["me"][@default_predicate] == nil
   end
 
   test "post and query with special characters in body" do
-    id = post_node(@test_predicate, [body: @special_chars]).resp_body
+    id = post_node(predicate: @default_predicate, props: [is: @default_type, body: @special_chars]).resp_body
     response = query_node(id, %{"body" => true}) |> to_json
     assert response["me"]["body"] == @special_chars
   end
 
   test "post with special characters in predicate returns error" do
-    response = post_node(@special_chars)
+    response = post_node(predicate: @special_chars)
     assert response.status == 400
   end
 
-  defp post_node(predicate \\ @test_predicate, properties \\ [body: @test_body]) do
-    call_post("/graph/#{@test_subject}/#{predicate}", [is: @test_object_type] ++ properties)
+  defp post_node(options \\ []) do
+    defaults = [subject: @default_subject, predicate: @default_predicate, props: @default_props]
+    opts = Keyword.merge(defaults, options) |> Enum.into(%{})
+    call_post("/graph/#{opts.subject}/#{opts.predicate}", opts.props)
   end
 
-  defp post_node(subject, predicate, object, properties) do
-    call_post("/graph/#{subject}/#{predicate}/#{object}", properties)
-  end
-
-  defp post_related_node(id) do
-    call_post("/graph/#{id}/#{@test_predicate}", [is: @test_object_type, body: @test_body])
+  defp post_link(subject, predicate, object, props) do
+    call_post("/graph/#{subject}/#{predicate}/#{object}", props)
   end
 
   defp query_node(id, query) do

@@ -16,7 +16,7 @@ defmodule MindRouter do
   end
 
   post "/graph/:subject/:predicate/:object" do
-    respond(conn, MindRepo.new_node(subject, predicate, object, conn.params))
+    respond(conn, MindRepo.link_nodes(subject, predicate, object, conn.params))
   end
 
   delete "/graph/:subject/:predicate/:object" do
