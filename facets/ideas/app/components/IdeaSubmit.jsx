@@ -6,7 +6,7 @@ export default class IdeaSubmit extends React.Component {
     super(props);
     this.state = { 
       body: '', 
-      predicate: this.props.providePredicate ? supportedPredicates[0] : undefined 
+      predicate: supportedPredicates[0]
     };
     this.handleChangeBody = this.handleChangeBody.bind(this);
     this.handleChangePredicate = this.handleChangePredicate.bind(this);
@@ -22,26 +22,30 @@ export default class IdeaSubmit extends React.Component {
   }
 
   submit(event) {
-    this.props.onSubmit(this.state);
+    this.props.onSubmit({
+      body: this.state.body,
+      predicate: this.props.providePredicate ? this.state.predicate : undefined
+    });
     this.setState({ body: '' });
     event.preventDefault();
   }
 
   render() {
+    const disabled = this.state.body.length === 0;
     return (
       <form onSubmit={this.submit} className="submit-form" >
         {
           this.props.providePredicate ?
             <label>
               <select value={this.state.predicate} onChange={this.handleChangePredicate}>
-                {supportedPredicates.map(p => <option key={p} value={p}>{p}</option>)}
+                {supportedPredicates.map(p => <option key={p}>{p}</option>)}
               </select>
             </label> : null
         }
         <label>
-          <textarea value={this.state.body} onChange={this.handleChangeBody} placeholder="New idea" />
+          <input type="text" value={this.state.body} onChange={this.handleChangeBody} placeholder="New idea" />
         </label>
-        <input type="submit" className="button" value="Submit" />
+        <input disabled={disabled} type="submit" className="button" value="Submit" />
       </form>
     );
   }

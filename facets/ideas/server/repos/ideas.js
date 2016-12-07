@@ -1,4 +1,4 @@
-import request from "axios";
+import axios from "axios";
 import join from "url-join";
 import config from "../../config";
 import { supportedPredicates } from "../../app/constants";
@@ -10,17 +10,17 @@ const rootPredicate = "root.idea";
 class IdeasRepo {
 
   getIdeas() {
-    return request
+    return axios
       .post(join(config.api_url, "query", rootSubject), { [rootPredicate]: queryProperties() })
-      .then((response) => {
+      .then(response => {
         return [].concat(response.data.me[rootPredicate] || []).map((idea) => toIdea(idea));
       });
   }
 
   getIdea(id) {
-    return request
+    return axios
       .post(join(config.api_url, "query", id), queryProperties())
-      .then((response) => {
+      .then(response => {
         return toIdea(response.data.me)
       });
   }
@@ -28,12 +28,14 @@ class IdeasRepo {
   submitIdea(idea, parent, predicate) {
     const properties = { is: 'idea', body: idea.body };
     const resource = parent === undefined ? join(rootSubject, rootPredicate) : join(parent, predicate);
-    return request
+    console.log('will submit idea', properties, resource);
+    return axios
       .post(join(config.api_url, "graph", resource), properties)
-      .then((response) => {
+      .then(response => {
         console.log('got response', response);
         return Object.assign(properties, { id: response.data, predicate: predicate });
       })
+      .catch(err => undefined);  // Investigate: if this line is removed, "Max promises reached" error is triggered by caller
   }
 
 }
