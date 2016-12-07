@@ -6,6 +6,7 @@ import { supportedPredicates } from "../../app/constants";
 const standardProperties = ["body", "created.at"];
 const rootSubject = "ideas.facet";
 const rootPredicate = "root.idea";
+const inversePredicateSuffix = ".for";
 
 class IdeasRepo {
 
@@ -26,7 +27,14 @@ class IdeasRepo {
   }
 
   submitIdea(idea, parent, predicate) {
-    const properties = { is: 'idea', body: idea.body };
+    const inversePredicate = predicate + inversePredicateSuffix;
+    const properties = { 
+      is: 'idea', 
+      body: idea.body,
+      links: {
+        [inversePredicate]: parent
+      }
+    };
     const resource = parent === undefined ? join(rootSubject, rootPredicate) : join(parent, predicate);
     return axios
       .post(join(config.api_url, "graph", resource), properties)
@@ -40,7 +48,8 @@ class IdeasRepo {
 
 function queryProperties() {
   const node = () => standardProperties.reduce((props, p) => Object.assign({}, props, { [p]: true }), {});
-  return supportedPredicates.reduce((props, p) => Object.assign({}, props, { [p]: node() }), node());
+  const predicates = supportedPredicates.concat(supportedPredicates.map(p => p + inversePredicateSuffix));
+  return predicates.reduce((props, p) => Object.assign({}, props, { [p]: node() }), node());
 }
 
 function toIdea(idea, predicate) {
@@ -49,7 +58,8 @@ function toIdea(idea, predicate) {
     body: idea.body,
     created: idea['created.at'],
     predicate,
-    related: relatedIdeas(idea)
+    related: relatedIdeas(idea),
+    parents: parentIdeas(idea)
   };
 }
 
@@ -57,6 +67,13 @@ function relatedIdeas(idea) {
   return supportedPredicates.reduce((relationships, p) => {
     const related = [].concat(idea[p] || []);
     return relationships.concat(related.map(i => toIdea(i, p)));
+  }, []);
+}
+
+function parentIdeas(idea) {
+  return supportedPredicates.reduce((parents, p) => {
+    const related = [].concat(idea[p + inversePredicateSuffix] || []);
+    return parents.concat(related.map(i => toIdea(i, p)))
   }, []);
 }
 

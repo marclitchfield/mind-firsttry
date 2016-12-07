@@ -11,6 +11,7 @@ export default class Idea extends React.Component {
     return (
       <Link to={"/idea/" + this.props.idea.id}>
         <div className="idea">
+          {this.props.children}
           <Predicate value={this.props.idea.predicate} />
           <div className="body">{this.props.idea.body}</div>
           <div className="created">{moment(created).fromNow()}</div>

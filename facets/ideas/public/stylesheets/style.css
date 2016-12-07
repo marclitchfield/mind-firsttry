@@ -36,10 +36,24 @@ a, a:hover, a:focus, a:active {
   font-size: .6em;
 }
 
+.idea .for {
+  background-color: #333;
+  font-size: .8em;
+  margin-right: 2px;
+  margin-left: -1px;
+  padding: .1em .3em;
+  border-radius: .2em;
+}
+
+.idea .parents {
+  margin-bottom: 3px;
+}
+
 .idea .predicate {
   display: inline-block;
   margin-right: 4px;
   vertical-align: top;
+  margin-top: 1px;
   border: 1px solid black;
   border-radius: .2em;
   width: 5.7em;

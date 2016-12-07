@@ -2,7 +2,9 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router";
 import Idea from "./Idea";
+import SelectedIdea from "./SelectedIdea";
 import IdeaSubmit from "./IdeaSubmit";
+import Predicate from "./Predicate";
 import _ from "lodash/core";
 import { fetchIdea, fetchRootIdeas, submitIdea } from "../actions";
 
@@ -31,7 +33,16 @@ export default class IdeaList extends React.Component {
     const providePredicate = this.props.selected.id !== undefined;
     return (
       <div className="idea-list">
-        {this.props.selected.id ? <Idea idea={this.props.selected} /> : null}
+        {this.props.selected.id ? 
+          <Idea idea={this.props.selected}>
+            {this.props.selected.parents.map(p => 
+              <div className="parents" key={p.id}>
+                <Predicate value={p.predicate} />
+                <span className="for">for</span>
+                <div className="body">{p.body}</div>
+              </div>)
+            }
+          </Idea> : null}
         <div className="related-ideas">
           {sortedIdeas.map(idea => <Idea key={idea.id} idea={idea} />)}
         </div>
