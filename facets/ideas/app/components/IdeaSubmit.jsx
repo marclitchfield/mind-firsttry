@@ -1,12 +1,14 @@
 import React from "react";
 import { supportedPredicates } from "../constants";
 
+const DEFAULT_PREDICATE = "reason";
+
 export default class IdeaSubmit extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
       body: '', 
-      predicate: supportedPredicates[0]
+      predicate: DEFAULT_PREDICATE
     };
     this.handleChangeBody = this.handleChangeBody.bind(this);
     this.handleChangePredicate = this.handleChangePredicate.bind(this);
