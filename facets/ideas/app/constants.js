@@ -1,9 +1,9 @@
 export const supportedPredicates = [
+  "concern",
+  "alternative",
   "reason",
   "example",
   "evidence",
-  "alternative",
   "question",
   "comment",
-  "concern"
 ];
