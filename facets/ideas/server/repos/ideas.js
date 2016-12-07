@@ -28,11 +28,9 @@ class IdeasRepo {
   submitIdea(idea, parent, predicate) {
     const properties = { is: 'idea', body: idea.body };
     const resource = parent === undefined ? join(rootSubject, rootPredicate) : join(parent, predicate);
-    console.log('will submit idea', properties, resource);
     return axios
       .post(join(config.api_url, "graph", resource), properties)
       .then(response => {
-        console.log('got response', response);
         return Object.assign(properties, { id: response.data, predicate: predicate });
       })
       .catch(err => undefined);  // Investigate: if this line is removed, "Max promises reached" error is triggered by caller
