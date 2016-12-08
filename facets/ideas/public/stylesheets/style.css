@@ -16,7 +16,7 @@ a, a:hover, a:focus, a:active {
 }
 
 .idea-list {
-  padding: 10px;
+  padding: 0 8px;
 }
 
 .submit-form {
@@ -24,10 +24,24 @@ a, a:hover, a:focus, a:active {
 }
 
 .idea {
-  background-color: darkslategray;
+  background-color: #457373;
   color: white;
   padding: 6px;
-  margin-bottom: 4px;
+  margin-top: .6em;
+}
+
+.root-ideas {
+  padding-top: .3em;
+}
+
+.root-ideas .idea {
+  margin-top: .3em;
+  background-color: darkslategray;
+}
+
+.idea.selected {
+  background-color: darkslategray;
+  outline: 1px solid #457373;
 }
 
 .idea .created {
@@ -36,20 +50,23 @@ a, a:hover, a:focus, a:active {
   font-size: .6em;
 }
 
-.idea .for {
-  background-color: #333;
+.idea .selection {
+  padding: 6px;
+}
+
+.idea .parents .body {
   font-size: .8em;
-  margin-right: 2px;
-  margin-left: -1px;
-  padding: .1em .3em;
+  margin-bottom: .4em;
+}
+
+.idea .parents .body {
+  background-color: #1f3333;
   border-radius: .2em;
+  padding: 4px 6px;
+  display: block;
 }
 
-.idea .parents {
-  margin-bottom: 3px;
-}
-
-.idea .predicate {
+.idea .idea-type {
   display: inline-block;
   margin-right: 4px;
   vertical-align: top;

@@ -1,20 +1,22 @@
 import axios from "axios";
 import join from "url-join";
 import config from "../../config";
-import { supportedPredicates } from "../../app/constants";
+import { SUPPORTED_TYPES } from "../../app/constants";
 
-const standardProperties = ["body", "created.at"];
-const rootSubject = "ideas.facet";
-const rootPredicate = "root.idea";
-const inversePredicateSuffix = ".for";
+const STANDARD_PREDICATES = ["body", "created.at"];
+const TYPE_PREDICATE = "is";
+const DEFAULT_TYPE = "idea";
+const ROOT_SUBJECT = "ideas.facet";
+const ROOT_PREDICATE = "root.idea";
+const PARENT_PREDICATE = "idea.parent";
 
 class IdeasRepo {
 
   getIdeas() {
     return axios
-      .post(join(config.api_url, "query", rootSubject), { [rootPredicate]: queryProperties() })
+      .post(join(config.api_url, "query", ROOT_SUBJECT), { [ROOT_PREDICATE]: queryProperties() })
       .then(response => {
-        return [].concat(response.data.me[rootPredicate] || []).map((idea) => toIdea(idea));
+        return [].concat(response.data.me[ROOT_PREDICATE] || []).map((idea) => toIdea(idea));
       });
   }
 
@@ -26,20 +28,17 @@ class IdeasRepo {
       });
   }
 
-  submitIdea(idea, parent, predicate) {
-    const inversePredicate = predicate + inversePredicateSuffix;
+  submitIdea(idea, parent, type) {
     const properties = { 
-      is: 'idea', 
+      [TYPE_PREDICATE]: type || DEFAULT_TYPE, 
       body: idea.body,
-      links: {
-        [inversePredicate]: parent
-      }
-    };
-    const resource = parent === undefined ? join(rootSubject, rootPredicate) : join(parent, predicate);
+      links: parent !== undefined ? { [PARENT_PREDICATE]: parent } : {}
+    }
+    const resource = parent === undefined ? join(ROOT_SUBJECT, ROOT_PREDICATE) : join(parent, type);
     return axios
       .post(join(config.api_url, "graph", resource), properties)
       .then(response => {
-        return Object.assign(properties, { id: response.data, predicate: predicate });
+        return Object.assign(properties, { id: response.data, type: type });
       })
       .catch(err => undefined);  // Investigate: if this line is removed, "Max promises reached" error is triggered by caller
   }
@@ -47,34 +46,30 @@ class IdeasRepo {
 }
 
 function queryProperties() {
-  const node = () => standardProperties.reduce((props, p) => Object.assign({}, props, { [p]: true }), {});
-  const predicates = supportedPredicates.concat(supportedPredicates.map(p => p + inversePredicateSuffix));
+  const node = () => STANDARD_PREDICATES.reduce((props, p) => Object.assign({}, props, { [p]: true }), { [TYPE_PREDICATE]: {} });
+  const predicates = SUPPORTED_TYPES.concat(PARENT_PREDICATE);
   return predicates.reduce((props, p) => Object.assign({}, props, { [p]: node() }), node());
 }
 
-function toIdea(idea, predicate) {
+function toIdea(ideaResponse) {
   return {
-    id: idea._xid_,
-    body: idea.body,
-    created: idea['created.at'],
-    predicate,
-    related: relatedIdeas(idea),
-    parents: parentIdeas(idea)
+    id: ideaResponse._xid_,
+    type: (ideaResponse.is || {})._xid_,
+    body: ideaResponse.body,
+    created: ideaResponse['created.at'],
+    children: childIdeas(ideaResponse),
+    parents: parentIdeas(ideaResponse)
   };
 }
 
-function relatedIdeas(idea) {
-  return supportedPredicates.reduce((relationships, p) => {
-    const related = [].concat(idea[p] || []);
-    return relationships.concat(related.map(i => toIdea(i, p)));
+function childIdeas(ideaResponse) {
+  return SUPPORTED_TYPES.reduce((children, t) => {
+    return children.concat([].concat(ideaResponse[t] || []).map(i => toIdea(i)));
   }, []);
 }
 
-function parentIdeas(idea) {
-  return supportedPredicates.reduce((parents, p) => {
-    const related = [].concat(idea[p + inversePredicateSuffix] || []);
-    return parents.concat(related.map(i => toIdea(i, p)))
-  }, []);
+function parentIdeas(ideaResponse) {
+  return [].concat(ideaResponse[PARENT_PREDICATE] || []).map(i => toIdea(i));
 }
 
 export default new IdeasRepo();

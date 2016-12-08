@@ -12,7 +12,7 @@ const router = express.Router();
 router.get("/", (request, response, next) => {
   renderIndex(request, response, next, () => ideasRepo.getIdeas().then(ideas => {
     return {
-      selected: { related: ideas }
+      selected: { children: ideas }
     };
   }));
 });

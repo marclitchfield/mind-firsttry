@@ -1,4 +1,4 @@
-export const supportedPredicates = [
+export const SUPPORTED_TYPES = [
   "objection",
   "concern",
   "alternative",

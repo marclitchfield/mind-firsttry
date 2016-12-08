@@ -14,8 +14,8 @@ export function fetchIdea(id) {
   }
 }
   
-export function submitIdea(idea, parent, predicate) {
-  const url = "/api/ideas/" + (parent ? parent + "/" + predicate : ""); 
+export function submitIdea(idea, parent, type) {
+  const url = "/api/ideas/" + (parent ? parent + "/" + type : ""); 
   return {
     type: "SUBMIT_IDEA",
     payload: axios.post(url, { body: idea.body }).then(response => response.data)

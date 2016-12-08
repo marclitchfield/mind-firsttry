@@ -1,17 +1,17 @@
 import React from "react";
-import { supportedPredicates } from "../constants";
+import { SUPPORTED_TYPES } from "../constants";
 
-const DEFAULT_PREDICATE = "reason";
+const DEFAULT_TYPE = "reason";
 
 export default class IdeaSubmit extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
       body: '', 
-      predicate: DEFAULT_PREDICATE
+      type: DEFAULT_TYPE
     };
     this.handleChangeBody = this.handleChangeBody.bind(this);
-    this.handleChangePredicate = this.handleChangePredicate.bind(this);
+    this.handleChangeType = this.handleChangeType.bind(this);
     this.submit = this.submit.bind(this);
   }
 
@@ -19,14 +19,14 @@ export default class IdeaSubmit extends React.Component {
     this.setState({ body: event.target.value });
   }
 
-  handleChangePredicate(event) {
-    this.setState({ predicate: event.target.value });
+  handleChangeType(event) {
+    this.setState({ type: event.target.value });
   }
 
   submit(event) {
     this.props.onSubmit({
       body: this.state.body,
-      predicate: this.props.providePredicate ? this.state.predicate : undefined
+      type: this.props.shouldSubmitType ? this.state.type : undefined
     });
     this.setState({ body: '' });
     event.preventDefault();
@@ -37,10 +37,10 @@ export default class IdeaSubmit extends React.Component {
     return (
       <form onSubmit={this.submit} className="submit-form" >
         {
-          this.props.providePredicate ?
+          this.props.shouldSubmitType ?
             <label>
-              <select value={this.state.predicate} onChange={this.handleChangePredicate}>
-                {supportedPredicates.map(p => <option key={p}>{p}</option>)}
+              <select value={this.state.type} onChange={this.handleChangeType}>
+                {SUPPORTED_TYPES.map(p => <option key={p}>{p}</option>)}
               </select>
             </label> : null
         }

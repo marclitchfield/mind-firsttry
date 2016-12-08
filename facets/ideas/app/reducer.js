@@ -4,7 +4,7 @@ export default handleActions({
 
   FETCH_ROOT_IDEAS_FULFILLED: (state, action) => {
     return Object.assign({}, state, {
-      selected: { related: action.payload }
+      selected: { children: action.payload }
     });
   },
 
@@ -17,12 +17,11 @@ export default handleActions({
   SUBMIT_IDEA_FULFILLED: (state, action) => {
     return Object.assign({}, state, {
       selected: Object.assign({}, state.selected, {
-        related: state.selected.related.concat(action.payload)
+        children: state.selected.children.concat(action.payload)
       })
     });
   }
 
 }, {
-  selected: {},
-  ideas: []
+  selected: { children: [] }
 });
