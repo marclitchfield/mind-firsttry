@@ -41,7 +41,6 @@ a, a:hover, a:focus, a:active {
 
 .idea.selected {
   background-color: darkslategray;
-  outline: 1px solid #457373;
 }
 
 .idea .created {
@@ -71,7 +70,7 @@ a, a:hover, a:focus, a:active {
   margin-right: 4px;
   vertical-align: top;
   margin-top: 1px;
-  border: 1px solid black;
+  outline: 1px solid black;
   border-radius: .2em;
   width: 5.7em;
   color: black;
