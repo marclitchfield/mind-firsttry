@@ -27,7 +27,7 @@ router.get("/idea/:id", (request, response, next) => {
 
 function renderIndex(request, response, next, load) {
   match({ routes, location: request.url }, (error, redirectLocation, renderProps) => {
-    load().then((initialState) => {
+    load().then(initialState => {
       if (error) { return response.status(500).send(error.message); }
       const store = createStore(initialState);
       response.render("index", renderParams(store, renderProps));

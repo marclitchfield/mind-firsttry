@@ -1,10 +1,16 @@
 import React from "react";
-import moment from "moment";
 import { Link } from "react-router";
+import { MenuList, MenuItem, MenuButton, Dropdown } from "react-menu-list"
+import moment from "moment";
 import IdeaType from "./IdeaType";
 import _ from "lodash/core";
 
-export default class SelectedIdea extends React.Component {  
+export default class SelectedIdea extends React.Component {
+  constructor(props) {
+    super(props);
+    this.renderOptionsMenu = this.renderOptionsMenu.bind(this);
+  }
+
   render() {
     const created = this.props.idea.created || Date.now();
     const sortedChildren = _.sortBy(this.props.relationships, (rel) => rel.idea.created);
@@ -13,14 +19,31 @@ export default class SelectedIdea extends React.Component {
       <div className="idea selected">
         { this.renderParents() }
         <div className="selection">
-          {showType ? <IdeaType value={this.props.idea.type} /> : null}
-          <div className="body">{this.props.idea.body}</div>
-          <div className="created">{moment(created).fromNow()}</div>
+          <div className="details">
+            {showType ? <IdeaType value={this.props.idea.type} /> : null}
+            <div className="body">{this.props.idea.body}</div>
+            <div className="created">{moment(created).fromNow()}</div>
+          </div>
+          <div className="options">
+            <div className="new-idea-button">＋</div>
+            <MenuButton className="options-menu" positionOptions={{hAlign: 'right', position: 'bottom'}} menu={this.renderOptionsMenu()}>☰</MenuButton>
+          </div>
         </div>
         <div className="children">
           { this.props.children }
         </div>
       </div>
+    ); 
+  }
+
+  renderOptionsMenu() {
+    return (
+      <Dropdown>
+        <MenuList>
+          <MenuItem><Link to="/" className="button secondary">Edit</Link></MenuItem>
+          <MenuItem><Link to="/" className="button alert">Delete</Link></MenuItem>
+        </MenuList>
+      </Dropdown>
     );
   }
 
@@ -33,3 +56,4 @@ export default class SelectedIdea extends React.Component {
       </div>);
   }
 }
+

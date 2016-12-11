@@ -3,6 +3,12 @@ body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
+div[data-reactroot] {
+  background-color: white !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
 a, a:hover, a:focus, a:active {
   color: white;
 }
@@ -51,6 +57,49 @@ a, a:hover, a:focus, a:active {
 
 .idea .selection {
   padding: 6px;
+  position: relative;
+}
+
+.idea .selection .body {
+  margin-right: 38px;
+}
+
+.idea .selection .details {
+  padding-right: 56px;
+}
+
+.idea .selection .options {
+  position: absolute;
+  height: 29px;
+  width: 56px;
+  right: 1px;
+  top: 4px;
+  font-size: 1.8em;
+  vertical-align: middle;
+  line-height: 1.1em;
+}
+
+.idea .options .new-idea-button {
+  position: static;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.idea .options .options-menu {
+  position: static;
+  display: inline-block;
+  margin-left: .3em;
+}
+
+div[role=menu] {
+  background-color: #1f3333;
+  padding: 6px;
+}
+
+div[role=menu] .button {
+  width: 80px;
+  margin: 0;
+  padding: 8px 0;
 }
 
 .idea .parents .body {

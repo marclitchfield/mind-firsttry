@@ -1,8 +1,5 @@
 #!/usr/bin/env node
-require("babel-register")({
-  presets: ["es2015", "react"],
-  plugins: ["transform-decorators-legacy"]
-});
+require("babel-register")(); 
 
 var app = require('../server/server');
 

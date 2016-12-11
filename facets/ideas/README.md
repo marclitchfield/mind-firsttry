@@ -7,7 +7,7 @@ Install node, then run
 ```
 npm install
 ```
-
+ 
 Ensure that the mind-api is running at ```http://localhost:5000```. 
 You can change this location with the ```MIND_API_URL``` environment variable.
 

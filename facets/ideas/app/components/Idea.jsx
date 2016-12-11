@@ -2,12 +2,10 @@ import React from "react";
 import moment from "moment";
 import { Link } from "react-router";
 import IdeaType from "./IdeaType";
-import _ from "lodash/core";
 
 export default class Idea extends React.Component {  
   render() {
     const created = this.props.idea.created || Date.now();
-    const sortedChildren = _.sortBy(this.props.relationships, (rel) => rel.idea.created);
     const showType = !this.props.hideType;
     return (
       <Link to={"/idea/" + this.props.idea.id}>

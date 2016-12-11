@@ -5,23 +5,19 @@ module.exports = [{
   entry: "browser",
   output: {
     path: path.join(__dirname, "public", "scripts"),
-    filename: "bundle.js"
+    filename: "bundle.js",
+    sourceMapFilename: "[file].map"
   },
-  devtool: "eval-source-map",
+  devtool: "source-map",
   module: {
     loaders: [
       { 
         test: /\.jsx?$/, 
-        exclude: /node_modules/,
-        loader: "babel-loader", 
-        query: {
-          plugins: ['transform-decorators-legacy']
-        }
+        loader: "babel"
       }
     ]
   },
   resolve: {
-    // you can now require('file') instead of require('file.coffee')
     extensions: ["", ".js", ".jsx"],
     root: [path.join(__dirname, "app")],
     modulesDirectories: ["node_modules"]
