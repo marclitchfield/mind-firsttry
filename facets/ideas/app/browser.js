@@ -10,6 +10,8 @@ const store = createStore(initialState);
 
 render((
   <Provider store={store}>
-    <Router history={browserHistory}>{routes}</Router>
+    <Router history={browserHistory}>
+      {routes(store)}
+    </Router>
   </Provider>
 ), document.getElementById("content"));

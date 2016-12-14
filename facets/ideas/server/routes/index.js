@@ -6,34 +6,35 @@ import { match, RouterContext } from "react-router";
 import routes from "../../app/routes";
 import createStore from "../../app/store";
 import ideasRepo from "../repos/ideas";
+import { fetchRootIdeas, fetchIdea } from "../../app/actions"
 
 const router = express.Router();
 
 router.get("/", (request, response, next) => {
   renderIndex(request, response, next, () => ideasRepo.getIdeas().then(ideas => {
     return {
-      selected: { children: ideas }
+      rootIdeas: ideas
     };
   }));
 });
 
-router.get("/idea/:id", (request, response, next) => {
+router.get("/idea/:id/:op?", (request, response, next) => {
   renderIndex(request, response, next, () => ideasRepo.getIdea(request.params.id).then(idea => {
     return {
-      selected: idea
+      selectedIdea: idea
     };
   }));
 });
 
 function renderIndex(request, response, next, load) {
-  match({ routes, location: request.url }, (error, redirectLocation, renderProps) => {
-    load().then(initialState => {
+  load().then(initialState => {
+    const store = createStore(initialState);
+    match({ routes: routes(store), location: request.url }, (error, redirectLocation, renderProps) => {
       if (error) { return response.status(500).send(error.message); }
-      const store = createStore(initialState);
       response.render("index", renderParams(store, renderProps));
     })
-    .catch(err => next(err));
-  });
+  })
+  .catch(err => next(err));  
 }
 
 function renderParams(store, renderProps) {

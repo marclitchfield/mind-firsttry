@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "./node_modules/.bin/supervisor -i . ./bin/www",
-    "server-watch": "./node_modules/.bin/supervisor -w . -i node_modules ./bin/www",
+    "server-watch": "./node_modules/.bin/supervisor -w . -i node_modules -i bundle.js -i bundle.js.map ./bin/www",
     "webpack-watch": "webpack -w --progress --color"
   },
   "dependencies": {
@@ -29,6 +29,7 @@
     "react-router": "^3.0.0",
     "redux": "^3.6.0",
     "redux-actions": "^1.1.0",
+    "redux-async-props": "^0.2.1",
     "redux-logger": "^2.7.4",
     "redux-promise-middleware": "^4.2.0",
     "serve-favicon": "^2.1.7",

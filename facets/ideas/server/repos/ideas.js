@@ -38,6 +38,7 @@ class IdeasRepo {
     return axios
       .post(join(config.api_url, "graph", resource), properties)
       .then(response => {
+        console.log('response.data', response.data);
         return Object.assign(properties, { id: response.data, type: type });
       })
       .catch(err => undefined);  // Investigate: if this line is removed, "Max promises reached" error is triggered by caller

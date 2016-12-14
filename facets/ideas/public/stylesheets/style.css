@@ -15,38 +15,36 @@ a, a:hover, a:focus, a:active {
 
 .button {
   background-color: darkslategray;
+  margin-right: 4px;
+}
+
+.button:disabled {
+  color: #000;
+  background-color: lightslategray;
 }
 
 .title-bar {
   background-color: darkslategray
 }
 
-.idea-list {
-  padding: 0 8px;
-}
-
-.submit-form {
-  margin-top: 30px;
-}
-
 .idea {
   background-color: #457373;
   color: white;
   padding: 6px;
-  margin-top: .6em;
+  margin-bottom: 6px;
 }
 
 .root-ideas {
-  padding-top: .3em;
+  padding: 6px;
 }
 
 .root-ideas .idea {
-  margin-top: .3em;
   background-color: darkslategray;
 }
 
 .idea.selected {
   background-color: darkslategray;
+  margin: 6px;
 }
 
 .idea .created {
@@ -100,6 +98,16 @@ div[role=menu] .button {
   width: 80px;
   margin: 0;
   padding: 8px 0;
+}
+
+.submit-form {
+  margin-top: 8px;
+}
+
+.idea .submit-form {
+  padding: 12px 8px 0 8px;
+  margin: 4px 0 12px 0;
+  background-color: #fff;
 }
 
 .idea .parents .body {
