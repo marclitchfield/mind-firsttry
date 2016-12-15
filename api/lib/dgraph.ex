@@ -49,7 +49,7 @@ defmodule Dgraph do
   defp build_mutation(error = {:error, _, _}, _), do: error
   defp build_mutation(_, error = {:error, _, _}), do: error
 
-  defp mutation_body(type, nil), do: ""
+  defp mutation_body(_type, nil), do: ""
   defp mutation_body(type, body), do: "#{type} { #{body} }"
 
   defp quad_body(quads) do
