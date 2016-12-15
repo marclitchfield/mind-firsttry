@@ -10,20 +10,32 @@ defmodule MindRepo do
     :object => "Object"
   }
 
-  def new_node(subject, predicate, props) do
+  def new_node(subject, predicate, props, links) do
     object = UUID.uuid4()
-    case Map.has_key?(props, @type_prop) do
-      true -> update(subject, predicate, object, props)
+    case Map.has_key?(links, @type_prop) do
+      true -> insert(subject, predicate, object, props, links)
       false -> {:error, :missing_predicate, @type_prop}
-    end
+    end 
   end
 
-  def link_nodes(subject, predicate, object, props) do
-    update(subject, predicate, object, props)
+  def link_nodes(subject, predicate, object, props, links) do
+    insert(subject, predicate, object, props, links)
+  end
+
+  def update_node(id, props, links, removals) do
+    IO.inspect props
+    IO.inspect links
+    IO.inspect removals
+    insert_quads = build_quads(id, props, links)
+    delete_quads = build_quads(id, [], removals)
+    Dgraph.update(insert_quads, delete_quads)
   end
 
   def query_nodes(id, request) do
-    Dgraph.query(id, request)
+    case Dgraph.query(id, request) do
+      {:ok, response} -> {:ok, response["me"] |> transform_xids}
+      error -> error
+    end
   end
 
   def delete_link(subject, predicate, object) do
@@ -36,16 +48,18 @@ defmodule MindRepo do
     Dgraph.update([self] ++ types)
   end
 
-  defp update(subject, predicate, object, props) do
-    object_type = key_values(@type_prop, props) 
-      |> Enum.map(fn type -> Dgraph.quad(object, @type_prop, [node: type]) end)
-    links = key_values(@links_prop, props)
-      |> Enum.map(fn {pred, link_obj} -> Dgraph.quad(object, pred, [node: link_obj]) end)
-    quads = new_node_quads(subject, predicate, object, props) ++ object_type ++ links
+  defp insert(subject, predicate, object, props, links) do
+    quads = new_node_quads(subject, predicate, object) ++ build_quads(object, props, links)
     case Dgraph.update(quads) do
       {:ok, _} -> {:ok, object}
       error -> error
     end
+  end
+
+  defp build_quads(object, props, links) do
+    prop_quads = props |> Enum.map(fn {k, v} -> Dgraph.quad(object, k, [value: v]) end)
+    link_quads = links |> Enum.map(fn {pred, link_obj} -> Dgraph.quad(object, pred, [node: link_obj]) end)
+    prop_quads ++ link_quads
   end
 
   defp key_values(key, props) do
@@ -56,14 +70,20 @@ defmodule MindRepo do
     end
   end
 
-  defp new_node_quads(subject, predicate, object, props) do
+  defp new_node_quads(subject, predicate, object) do
     object_quad = Dgraph.quad(subject, predicate, [node: object])
     created_quad = Dgraph.quad(object, @created_pred, [value: (DateTime.utc_now |> DateTime.to_string) ])
-    properties = props
-      |> Enum.reject(fn {k, _} -> k == @type_prop end)
-      |> Enum.reject(fn {k, _} -> k == @links_prop end)
-      |> Enum.map(fn {k, v} -> Dgraph.quad(object, k, [value: v]) end)
-    [object_quad, created_quad] ++ properties
+    [object_quad, created_quad]
   end
+
+  defp transform_xids(graph) when is_map(graph) do
+    graph |> Enum.map(fn {k, v} -> { xid_to_id(k), transform_xids(v) } end) |> Enum.into(%{})
+  end
+
+  defp transform_xids(list) when is_list(list), do: list |> Enum.map(fn x -> transform_xids(x) end)
+  defp transform_xids(value), do: value
+
+  defp xid_to_id("_xid_"), do: "id"
+  defp xid_to_id(key), do: key
 
 end

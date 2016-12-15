@@ -2,6 +2,10 @@ defmodule MindRouter do
   use Plug.Router
   require Logger
 
+  @props "props"
+  @links "links"
+  @removals "removals"
+
   plug Plug.Parsers, parsers: [:json], json_decoder: Poison
   plug Plug.Logger
   plug :match
@@ -12,11 +16,15 @@ defmodule MindRouter do
   end
 
   post "/graph/:subject/:predicate" do
-    respond(conn, MindRepo.new_node(subject, predicate, conn.params))
+    respond(conn, MindRepo.new_node(subject, predicate, conn.params[@props] || %{}, conn.params[@links] || %{}))
   end
 
   post "/graph/:subject/:predicate/:object" do
-    respond(conn, MindRepo.link_nodes(subject, predicate, object, conn.params))
+    respond(conn, MindRepo.link_nodes(subject, predicate, object, conn.params[@props], conn.params[@links]))
+  end
+
+  post "/graph/:subject" do
+    respond(conn, MindRepo.update_node(subject, conn.params[@props], conn.params[@links], conn.params[@removals]))
   end
 
   delete "/graph/:subject/:predicate/:object" do

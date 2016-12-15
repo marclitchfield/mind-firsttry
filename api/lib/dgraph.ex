@@ -13,7 +13,6 @@ defmodule Dgraph do
   ]
   
   def process_url(url) do
-    IO.puts "Request to #{Application.get_env(:api, :dgraph_url) <> url}"
     Application.get_env(:api, :dgraph_url) <> url
   end
 
@@ -25,28 +24,40 @@ defmodule Dgraph do
     [subject: subject, predicate: predicate, object: object]
   end
 
-  def update(quads) do
-    mutation(:set, quads) |> execute
+  def update(insert_quads, delete_quads \\ []) do
+    mutation(insert_quads, delete_quads) |> execute
   end
 
   def delete(quads) do
-    mutation(:delete, quads) |> execute
+    mutation([], quads) |> execute
   end
 
   def query(xid, request) do
     query_root(xid, query_body(request)) |> execute
   end
 
-  defp mutation(verb, quads) when is_list(quads), do: mutation(verb, quad_body(quads))
-  defp mutation(:set, {:ok, body}), do: {:ok, "mutation { set { #{body} } }"}
-  defp mutation(:delete, {:ok, body}), do: {:ok, "mutation { delete { #{body} } }"}
-  defp mutation(_, error = {:error, _, _}), do: error
+  defp mutation(inserts, deletes) do
+    build_mutation(quad_body(inserts), quad_body(deletes))
+  end
+
+  defp build_mutation({:ok, insert_body}, {:ok, delete_body}) do
+    set = mutation_body("set", insert_body)
+    delete = mutation_body("delete", delete_body)
+    {:ok, "mutation { #{set} #{delete} }"}
+  end
+
+  defp build_mutation(error = {:error, _, _}, _), do: error
+  defp build_mutation(_, error = {:error, _, _}), do: error
+
+  defp mutation_body(type, nil), do: ""
+  defp mutation_body(type, body), do: "#{type} { #{body} }"
 
   defp quad_body(quads) do
     cond do
       Enum.any?(quads, fn q -> invalid_chars?(q[:subject]) end) -> {:error, :invalid_request, :subject}
       Enum.any?(quads, fn q -> invalid_chars?(q[:predicate]) end) -> {:error, :invalid_request, :predicate}
-      true -> {:ok, build_quad_body(quads)}
+      Enum.any?(quads) -> {:ok, build_quad_body(quads)}
+      true -> {:ok, nil}
     end
   end
 
