@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import IdeaType from "./IdeaType";
 import { SUPPORTED_TYPES } from "../constants";
 
 const DEFAULT_TYPE = "reason";
@@ -27,7 +28,9 @@ export default class IdeaSubmit extends React.Component {
   }
 
   componentDidMount() {
-    ReactDOM.findDOMNode(this.refs.bodyInput).focus();
+    if (!this.props.noFocus) {
+      ReactDOM.findDOMNode(this.refs.bodyInput).focus();
+    }
   }
 
   submit(event) {
@@ -58,9 +61,10 @@ export default class IdeaSubmit extends React.Component {
         {
           this.props.shouldSubmitType ?
             <label>
-              <select value={this.state.type} onChange={this.handleChangeType}>
+              <select className="idea-type-select" value={this.state.type} onChange={this.handleChangeType}>
                 {SUPPORTED_TYPES.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
+              <IdeaType value={this.state.type} />
             </label> : null
         }
         <label>

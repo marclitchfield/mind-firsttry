@@ -16,7 +16,7 @@ class IdeasRepo {
     return axios
       .post(join(config.api_url, "query", ROOT_SUBJECT), { [ROOT_PREDICATE]: queryProperties() })
       .then(response => {
-        return [].concat(response.data.me[ROOT_PREDICATE] || []).map((idea) => toIdea(idea));
+        return [].concat(response.data[ROOT_PREDICATE] || []).map((idea) => toIdea(idea));
       });
   }
 
@@ -24,22 +24,25 @@ class IdeasRepo {
     return axios
       .post(join(config.api_url, "query", id), queryProperties())
       .then(response => {
-        return toIdea(response.data.me)
+        return toIdea(response.data)
       });
   }
 
   submitIdea(idea, parent, type) {
-    const properties = { 
-      [TYPE_PREDICATE]: type || DEFAULT_TYPE, 
-      body: idea.body,
-      links: parent !== undefined ? { [PARENT_PREDICATE]: parent } : {}
+    const payload = {
+      props: {
+        body: idea.body
+      },
+      links: Object.assign({
+        [TYPE_PREDICATE]: type || DEFAULT_TYPE
+      }, parent !== undefined ? { [PARENT_PREDICATE]: parent } : {})
     }
+    
     const resource = parent === undefined ? join(ROOT_SUBJECT, ROOT_PREDICATE) : join(parent, type);
     return axios
-      .post(join(config.api_url, "graph", resource), properties)
+      .post(join(config.api_url, "graph", resource), payload)
       .then(response => {
-        console.log('response.data', response.data);
-        return Object.assign(properties, { id: response.data, type: type });
+        return Object.assign({}, payload.props, { id: response.data, type: type });
       })
       .catch(err => undefined);  // Investigate: if this line is removed, "Max promises reached" error is triggered by caller
   }
@@ -54,8 +57,8 @@ function queryProperties() {
 
 function toIdea(ideaResponse) {
   return {
-    id: ideaResponse._xid_,
-    type: (ideaResponse.is || {})._xid_,
+    id: ideaResponse.id,
+    type: (ideaResponse.is || {}).id,
     body: ideaResponse.body,
     created: ideaResponse['created.at'],
     children: childIdeas(ideaResponse),

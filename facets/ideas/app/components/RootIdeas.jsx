@@ -16,7 +16,7 @@ export default class RootIdeas extends React.Component {
     return (
       <div className="root-ideas">
         <IdeaList hideType={true} ideas={this.props.rootIdeas} />
-        <IdeaSubmit onSubmit={this.handleSubmit} shouldSubmitType={false} hideCancel={true} />
+        <IdeaSubmit onSubmit={this.handleSubmit} shouldSubmitType={false} hideCancel={true} noFocus={true} />
       </div>
     );
   }
