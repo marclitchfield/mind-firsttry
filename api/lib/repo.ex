@@ -59,14 +59,6 @@ defmodule MindRepo do
     prop_quads ++ link_quads
   end
 
-  defp key_values(key, props) do
-    case props do
-      %{^key => values} when is_map(values) -> values
-      %{^key => value} -> [value]
-      _ -> []
-    end
-  end
-
   defp new_node_quads(subject, predicate, object) do
     object_quad = Dgraph.quad(subject, predicate, [node: object])
     created_quad = Dgraph.quad(object, @created_pred, [value: (DateTime.utc_now |> DateTime.to_string) ])

@@ -39,14 +39,14 @@ curl localhost:9000/init -XPOST -H "Content-Type: application/json"
 
 ### Post a node
 
-To create a node, provide a source and predicate in the url, and properties in the payload. 
-The 'is' property is the only required property for the new node. Try creating a node
+To create a node, provide a source and predicate in the url, and properties and links in the payload. 
+The 'is' link is the only required value for the new node. Try creating a node
 that is linked to the built in 'self' node:
 
 ```
-curl localhost:9000/graph/self/root -XPOST -H "Content-Type: application/json" -d '{ 
-  "is": "idea", 
-  "body": "I think" 
+curl localhost:9000/graph/self/root -XPOST -H "Content-Type: application/json" -d '{
+  "properties": { "body": "I think" },
+  "links": { "is": "idea" }
 }'
 ```
 This creates a new node that is linked to 'self' by the 'root' predicate. 
@@ -58,11 +58,10 @@ Now try creating another node that is linked to the first node you created:
 
 ```
 curl localhost:9000/graph/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1/therefore -XPOST -H "Content-Type: application/json" -d '{
-  "is": "idea",
-  "body": "I am" 
+  "properties": { "body": "I am" },
+  "links": { "is": "idea" }
 }'
 ```
-
 
 ### Get a node
 
@@ -70,14 +69,15 @@ To retrieve a node, post to the query endpoint with a json structure that descri
 In this example, the body is returned:
 ```
 curl "localhost:9000/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
-  "body": true
+  "body": true, "is": {}
 }'
 ```
 ```javascript
 {
   me: {
-    body: "I think"
-    _xid_: "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1"
+    is: { id: "idea" },
+    body: "I think",
+    id: "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1"
   }
 }
 ```
@@ -98,9 +98,9 @@ curl "localhost:9000/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Cont
 ```javascript
 {
   me: {
+    id: "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1",
     body: "I think",
-    therefore: { body: "I am", _xid_: "160ddbcd-ac81-4de0-b055-d01555d1a59c" },
-    _xid_: "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1"
+    therefore: { id: "160ddbcd-ac81-4de0-b055-d01555d1a59c", body: "I am" }
   }
 }
 ```
@@ -130,7 +130,6 @@ Some example commands:
 ```fish
 set xid (new_node self root idea "I think")
 new_node $xid therefore idea "I am"
-query_node $xid therefore
 query_graph $xid '{ "body": true, "therefore": { "body": true } }'
 delete_link self root $xid
 ```

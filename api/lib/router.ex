@@ -1,7 +1,6 @@
 defmodule MindRouter do
   use Plug.Router
   require Logger
-
   @props "props"
   @links "links"
   @removals "removals"
