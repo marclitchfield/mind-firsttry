@@ -28,7 +28,6 @@ defmodule ApiTest do
     assert response.status == 200
   end
 
-  @tag :wip
   test "get node by id" do
     id = post_node().resp_body
     response = query_node(id, [body: true, "created.at": true]) |> to_json
@@ -102,7 +101,6 @@ defmodule ApiTest do
     id = post_node().resp_body
     update_node(id, [body: "updated_body"], [is: "updated_type"], [is: @default_type])
     updated = query_node(id, [body: true, is: %{}]) |> to_json
-    IO.inspect updated
     assert updated.body == "updated_body"
     assert updated.is.id == "updated_type"
   end

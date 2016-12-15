@@ -23,9 +23,6 @@ defmodule MindRepo do
   end
 
   def update_node(id, props, links, removals) do
-    IO.inspect props
-    IO.inspect links
-    IO.inspect removals
     insert_quads = build_quads(id, props, links)
     delete_quads = build_quads(id, [], removals)
     Dgraph.update(insert_quads, delete_quads)
