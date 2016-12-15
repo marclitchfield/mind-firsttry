@@ -7,49 +7,75 @@ import IdeaSubmit from "./IdeaSubmit";
 import moment from "moment";
 import _ from "lodash/core";
 
+const EDIT = "edit";
+const NEW = "new";
+
 export default class SelectedIdea extends React.Component {
   constructor(props) {
     super(props);
-    this.renderSubmitIfActive = this.renderSubmitIfActive.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.route = this.route.bind(this);
+    this.renderSelection = this.renderSelection.bind(this);
+    this.renderSubmitNew = this.renderSubmitNew.bind(this);
+    this.renderEditor = this.renderEditor.bind(this);
+    this.handleSubmitNew = this.handleSubmitNew.bind(this);
+    this.handleSubmitEdit = this.handleSubmitEdit.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
   }
 
   render() {
     const { selectedIdea } = this.props;
-    const created = selectedIdea.created || Date.now();
     const showType = selectedIdea.parents && selectedIdea.parents.length > 0;
     return (
       <div className="idea selected">
         { this.renderParents(selectedIdea) }
-        <div className="selection">
-          <div className="details">
-            {showType ? <IdeaType value={selectedIdea.type} /> : null}
-            <div className="body">{selectedIdea.body}</div>
-            <div className="created">{moment(created).fromNow()}</div>
-          </div>
-          <div className="options">
-            <Link to={`/idea/${selectedIdea.id}/new`} className="new-idea-button">＋</Link>
-            <MenuButton className="options-menu" positionOptions={{hAlign: 'right', position: 'bottom'}} 
-              menu={this.renderOptionsMenu(selectedIdea)}>☰</MenuButton>
-          </div>
-        </div>
+        { this.route() === EDIT 
+            ? this.renderEditor(selectedIdea, showType) 
+            : this.renderSelection(selectedIdea, showType) }
+        { this.route() === NEW ? this.renderSubmitNew() : null }
         <div className="children">
-          {this.renderSubmitIfActive()}
           <IdeaList ideas={selectedIdea.children} />
         </div>
       </div>
     ); 
   }
 
-  renderSubmitIfActive() {
-    if (this.props.routes[this.props.routes.length - 1].path === "new") {
-      return <IdeaSubmit onSubmit={this.handleSubmit} onCancel={this.handleCancel} shouldSubmitType={true} />;
-    }
+  route() {
+    return this.props.routes[this.props.routes.length - 1].path;
   }
 
-  handleSubmit(idea) {
-    this.props.actions.submitIdea(idea, this.props.selectedIdea.id, idea.type);
+  renderSelection(selectedIdea, showType) {
+    const created = selectedIdea.created || Date.now();
+    return (
+      <div className="selection">
+        <div className="details">
+          {showType ? <IdeaType value={selectedIdea.type} /> : null}
+          <div className="body">{selectedIdea.body}</div>
+          <div className="created">{moment(created).fromNow()}</div>
+        </div>
+        <div className="options">
+          <Link to={`/idea/${selectedIdea.id}/new`} className="new-idea-button">＋</Link>
+          <MenuButton className="options-menu" positionOptions={{hAlign: 'right', position: 'bottom'}} 
+            menu={this.renderOptionsMenu(selectedIdea)}>☰</MenuButton>
+        </div>
+      </div>);
+  }
+
+  renderSubmitNew() {
+    return <IdeaSubmit onSubmit={this.handleSubmitNew} onCancel={this.handleCancel} shouldSubmitType={true} />;
+  }
+
+  renderEditor(selectedIdea, showType) {
+    return <IdeaSubmit onSubmit={this.handleSubmitEdit} onCancel={this.handleCancel} 
+      shouldSubmitType={showType} selectedIdea={selectedIdea} />;
+  }
+
+  handleSubmitNew(newIdea) {
+    this.props.actions.submitIdea(newIdea, this.props.selectedIdea.id, newIdea.type);
+    this.props.router.replace(`/idea/${this.props.selectedIdea.id}`);
+  }
+  
+  handleSubmitEdit(editedIdea) {
+    this.props.actions.updateIdea(editedIdea);
     this.props.router.replace(`/idea/${this.props.selectedIdea.id}`);
   }
 

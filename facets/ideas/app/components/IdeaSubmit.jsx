@@ -8,7 +8,7 @@ const DEFAULT_TYPE = "reason";
 export default class IdeaSubmit extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { 
+    this.state = props.selectedIdea || { 
       body: '', 
       type: DEFAULT_TYPE
     };
@@ -35,10 +35,10 @@ export default class IdeaSubmit extends React.Component {
 
   submit(event) {
     event.preventDefault();
-    this.props.onSubmit({ 
-      body: this.state.body, 
-      type: this.props.shouldSubmitType ? this.state.type : undefined
-    });
+    const edited = this.props.selectedIdea !== undefined ? {
+      _previous_type: this.props.selectedIdea.type
+    } : {};
+    this.props.onSubmit(Object.assign({}, edited, this.state));
     this.setState({ body: '' });
   }
 

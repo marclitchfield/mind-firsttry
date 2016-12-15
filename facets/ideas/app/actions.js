@@ -20,11 +20,17 @@ export function submitRootIdea(idea) {
   }  
 }
 
+export function updateIdea(idea) {
+  return {
+    type: "UPDATE_IDEA",
+    payload: axios.put(`/api/ideas/${idea.id}`, idea).then(response => response.data)
+  }
+}
 
 export function fetchIdea(id) {
   return {
     type: "FETCH_IDEA",
-    payload: axios.get("/api/ideas/" + id).then(response => response.data)
+    payload: axios.get(`/api/ideas/${id}`).then(response => response.data)
   }
 }
   

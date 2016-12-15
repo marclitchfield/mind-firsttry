@@ -20,7 +20,7 @@ function link_nodes --description "link_nodes <subject> <predicate> <object>"
 end
 
 function query_graph --description "query_graph <subject> <query>"
-    curl "$MIND_API_URL/query/$argv[1]" -XPOST -H "Content-Type: application/json" -d $argv[2]
+    curl -v "$MIND_API_URL/query/$argv[1]" -XPOST -H "Content-Type: application/json" -d $argv[2]
 end
 
 function delete_link --description "delete_link <subject> <predicate> <object>"

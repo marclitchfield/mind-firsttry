@@ -12,12 +12,16 @@ const PARENT_PREDICATE = "idea.parent";
 
 class IdeasRepo {
 
+ // Investigate: if catch statements are removed, "Max promises reached" error is triggered by caller
+
   getIdeas() {
     return axios
       .post(join(config.api_url, "query", ROOT_SUBJECT), { [ROOT_PREDICATE]: queryProperties() })
       .then(response => {
+        console.log(response);
         return [].concat(response.data[ROOT_PREDICATE] || []).map((idea) => toIdea(idea));
-      });
+      })
+      .catch(err => console.log('err', err));
   }
 
   getIdea(id) {
@@ -25,26 +29,36 @@ class IdeasRepo {
       .post(join(config.api_url, "query", id), queryProperties())
       .then(response => {
         return toIdea(response.data)
-      });
+      })
+      .catch(err => undefined); 
   }
 
-  submitIdea(idea, parent, type) {
+  createIdea(idea, parent, type) {
     const payload = {
-      props: {
-        body: idea.body
-      },
+      props: { body: idea.body },
       links: Object.assign({
         [TYPE_PREDICATE]: type || DEFAULT_TYPE
       }, parent !== undefined ? { [PARENT_PREDICATE]: parent } : {})
     }
-    
     const resource = parent === undefined ? join(ROOT_SUBJECT, ROOT_PREDICATE) : join(parent, type);
     return axios
       .post(join(config.api_url, "graph", resource), payload)
       .then(response => {
         return Object.assign({}, payload.props, { id: response.data, type: type });
       })
-      .catch(err => undefined);  // Investigate: if this line is removed, "Max promises reached" error is triggered by caller
+      .catch(err => undefined); 
+  }
+
+  updateIdea(idea) {
+    const payload = {
+      props: { body: idea.body },
+      links: idea.type === undefined ? {} : { [TYPE_PREDICATE]: idea.type },
+      removals: idea._previous_type === idea.type ? {} : { [TYPE_PREDICATE]: idea._previous_type }
+    }
+    return axios
+      .post(join(config.api_url, `graph/${idea.id}`), payload)
+      .then(response => { return idea })
+      .catch(err => undefined);
   }
 
 }

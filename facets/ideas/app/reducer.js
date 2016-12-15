@@ -16,7 +16,15 @@ export default handleActions({
 
   SUBMIT_ROOT_IDEA_FULFILLED: (state, action) => {
     return Object.assign({}, state, {
-      rootIdeas: state.rootIdeas.concat(action.payload)
+      rootIdeas: (state.rootIdeas || []).concat(action.payload)
+    });
+  },
+
+  UPDATE_IDEA_FULFILLED: (state, action) => {
+    return Object.assign({}, state, {
+      selectedIdea: state.selectedIdea ? Object.assign({}, state.selectedIdea, action.payload) : undefined,
+      rootIdeas: (state.rootIdeas || []).map(idea => 
+        idea.id === action.payload.id ? Object.assign({}, idea, action.payload) : idea)
     });
   },
   
