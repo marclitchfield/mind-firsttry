@@ -41,20 +41,47 @@ The API exposes the following endpoints
 
 ### Payload formats
 
-The ```node_mutation``` format has the following keys:
+#### ```node_mutation```
+Contains operations for how the node should be mutated. Any combination of operations can be provided.
 
+```javascript
+{
+  "props": {},
+  "in": {},
+  "out": {},
+  "del": {}
+}
+```
 * **props**: properties to set on the node. Value is a map of properties.
 * **in**: links to create to this node. Value is a map of predicates and source node ids.
 * **out**: links to create from this node. Value is a map of predicates and target node ids.
 * **del**: outbound links to delete from this node. Value is a map of predicates and target node ids.
 
-The ```graph_mutation``` format is a map, where the keys are the node ids to mutate, and the value is a ```node_mutation```. 
+#### ```graph_mutation``` 
+Contains a map of node ids and corresponding ```node_mutation``` operations.
 
-The ```query_mutation``` is a map of the properties or links to be retrieved. The value controls whether
-or property or a link is selected for the given key. 
+```javascript
+{
+  "id1": { /* node_mutation */ },
+  "id2": { /* node_mutation */ }
+}
+```
+
+#### ```query_mutation``` 
+Specifies the data that should be returned from the graph.
+
+```javascript
+{
+  "prop1": true,
+  "prop2": true,
+  "link1": {
+    "prop3": true
+  }
+}
+```
 
 * When the value is true, a property selected for the given key.
-* When the value is a map, a link is selected for the given key.
+* When the value is a map, a link is selected for the given key. Nested properties and links can be retrieved.
 
 
 ## Usage
@@ -62,6 +89,7 @@ or property or a link is selected for the given key.
 To interact with the mind-api from the command line, there are fish shell commands available in ```scripts/commands.fish```.
 These commands are simple wrappers around curl, and are not required for making calls to the mind-api. 
 
+#### new_node
 To create a new node with properties, using the "props" operation:
 
 ```fish
@@ -88,6 +116,7 @@ Returns
 }
 ```
 
+#### mutate_node
 To mutate an existing node using the "out" operation":
 
 ```fish
@@ -103,6 +132,7 @@ Returns
 }
 ```
 
+#### mutate_graph
 To mutate multiple nodes:
 
 ```fish
@@ -125,6 +155,7 @@ Returns
 }
 ```
 
+#### del operation
 To delete links between nodes, you can use either mutate function with a "del" operation. 
 
 ```fish
