@@ -1,80 +1,47 @@
 defmodule MindRepo do
-  @type_prop "is"
-  @links_prop "links"
-  @xid_pred "_xid_"
+  @id_pred "id"
   @created_pred "created.at"
-  @types %{
-    :space => "Space",
-    :concept => "Concept",
-    :event => "Event",  
-    :person => "Person",
-    :object => "Object"
-  }
 
-  def new_node(subject, predicate, props, links) do
-    object = UUID.uuid4()
-    case Map.has_key?(links, @type_prop) do
-      true -> insert(subject, predicate, object, props, links)
-      false -> {:error, :missing_predicate, @type_prop}
-    end 
-  end
-
-  def link_nodes(subject, predicate, object, props, links) do
-    insert(subject, predicate, object, props, links)
-  end
-
-  def update_node(id, props, links, removals) do
-    insert_quads = build_quads(id, props, links)
-    delete_quads = build_quads(id, [], removals)
-    Dgraph.update(insert_quads, delete_quads)
-  end
-
-  def query_nodes(id, request) do
-    case Dgraph.query(id, request) do
-      {:ok, response} -> {:ok, response["me"] |> transform_xids}
+  def query_graph(id, query) do
+    case Dgraph.query(id, query) do
+      {:ok, response} -> {:ok, response["node"] |> Enum.at(0)}
       error -> error
     end
   end
 
-  def delete_link(subject, predicate, object) do
-    Dgraph.delete([ Dgraph.quad(subject, predicate, [node: object]) ])
-  end
-
-  def initialize() do
-    self = Dgraph.quad(:self, :is, [node: :person])
-    types = @types |> Enum.map(fn({type, label}) -> Dgraph.quad(type, :label, [value: label]) end)
-    Dgraph.update([self] ++ types)
-  end
-
-  defp insert(subject, predicate, object, props, links) do
-    quads = new_node_quads(subject, predicate, object) ++ build_quads(object, props, links)
-    case Dgraph.update(quads) do
-      {:ok, _} -> {:ok, object}
+  def new_node(mutations) do
+    id = UUID.uuid4()
+    ops = new_node_ops(id) ++ (mutations |> to_ops(id))
+    case Dgraph.mutate(ops) do
+      {:ok, _} -> {:ok, id}
       error -> error
     end
   end
 
-  defp build_quads(object, props, links) do
-    prop_quads = props |> Enum.map(fn {k, v} -> Dgraph.quad(object, k, [value: v]) end)
-    link_quads = links |> Enum.map(fn {pred, link_obj} -> Dgraph.quad(object, pred, [node: link_obj]) end)
-    prop_quads ++ link_quads
+  def mutate_node(id, mutations) do
+    Dgraph.mutate(mutations |> to_ops(id))
   end
 
-  defp new_node_quads(subject, predicate, object) do
-    object_quad = Dgraph.quad(subject, predicate, [node: object])
-    xid_quad = Dgraph.quad(object, @xid_pred, [value: object])
-    created_quad = Dgraph.quad(object, @created_pred, [value: (DateTime.utc_now |> DateTime.to_string) ])
-    [object_quad, xid_quad, created_quad]
+  def mutate_graph(mutations_map) do
+    quads = Enum.reduce(mutations_map, [], fn ({id, m}, acc) -> acc ++ (m |> to_ops(id)) end)
+    Dgraph.mutate(quads)
   end
 
-  defp transform_xids(graph) when is_map(graph) do
-    graph |> Enum.map(fn {k, v} -> { xid_to_id(k), transform_xids(v) } end) |> Enum.into(%{})
+  def to_ops(mutations, id) do
+    mutation_kw = Enum.map(mutations, fn({key, value}) -> {String.to_atom(key), value} end)
+    defaults = [props: [], in: [], out: [], del: []]
+    m = Keyword.merge(defaults, mutation_kw) |> Enum.into(%{})
+    prop_quads = m.props |> Enum.map(fn {p, o} -> Dgraph.quad(id, p, [value: o]) end)
+    in_quads = m.in |> Enum.map(fn {p, s} -> Dgraph.quad(s, p, [node: id]) end)
+    out_quads = m.out |> Enum.map(fn {p, o} -> Dgraph.quad(id, p, [node: o]) end)
+    del_quads = m.del |> Enum.map(fn {p, o} -> Dgraph.quad(id, p, [node: o]) end)
+    [set: prop_quads ++ in_quads ++ out_quads, del: del_quads]
   end
 
-  defp transform_xids(list) when is_list(list), do: list |> Enum.map(fn x -> transform_xids(x) end)
-  defp transform_xids(value), do: value
-
-  defp xid_to_id("_xid_"), do: "id"
-  defp xid_to_id(key), do: key
+  defp new_node_ops(id) do
+    id_quad = Dgraph.quad(id, @id_pred, [value: id])
+    created_quad = Dgraph.quad(id, @created_pred, [value: (DateTime.utc_now |> DateTime.to_string) ])
+    [set: [id_quad, created_quad]]
+  end
 
 end

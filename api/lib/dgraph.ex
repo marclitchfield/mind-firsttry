@@ -1,7 +1,10 @@
 defmodule Dgraph do
   use HTTPoison.Base
   alias HTTPoison.Response
+  import IEx
+
   @success_code "ErrorOk"
+  @id_pred "id"
   @invalid_request_code "ErrorInvalidRequest"  
   @valid_id_regex ~r/^[a-zA-Z0-9.\-_]*$/
   @escape_entities [
@@ -17,47 +20,45 @@ defmodule Dgraph do
   end
 
   def process_response_body(body) do
+    IO.inspect {:dgraph_response, body |> Poison.decode!}
     body |> Poison.decode!
   end
 
   def quad(subject, predicate, object) do
-    [subject: subject, predicate: predicate, object: object]
+    {[subject: subject, predicate: predicate, object: object]}
   end
 
-  def update(insert_quads, delete_quads \\ []) do
-    mutation(insert_quads, delete_quads) |> execute
+  def query(id, query) do
+    query_node(id, query_body(query)) |> execute
   end
 
-  def delete(quads) do
-    mutation([], quads) |> execute
+  def mutate(ops) do
+    mutation(ops) |> execute
   end
 
-  def query(xid, request) do
-    query_root(xid, query_body(request)) |> execute
+  defp mutation(ops) do
+    case validate(ops) do
+      {:ok, valid_ops} -> {:ok, "mutation { " <> mutation_body(valid_ops) <> " }"}
+      error = {:error, _, _} -> error 
+    end
   end
 
-  defp mutation(inserts, deletes) do
-    build_mutation(quad_body(inserts), quad_body(deletes))
+  defp mutation_body(ops) do
+    combined_ops = Enum.reduce(ops, [set: [], del: []], 
+      fn {op, quads}, acc -> Keyword.put(acc, op, acc[op] ++ quads) end)
+    combined_ops |> Enum.map(fn {op, quads} -> op_body(op, quads) end) |> Enum.join(" ")
   end
 
-  defp build_mutation({:ok, insert_body}, {:ok, delete_body}) do
-    set = mutation_body("set", insert_body)
-    delete = mutation_body("delete", delete_body)
-    {:ok, "mutation { #{set} #{delete} }"}
-  end
+  defp op_body(_, []), do: ""
+  defp op_body(:set, quads), do: "set { " <> build_quad_body(quads) <> " }"
+  defp op_body(:del, quads), do: "delete { " <> build_quad_body(quads) <> " }"
 
-  defp build_mutation(error = {:error, _, _}, _), do: error
-  defp build_mutation(_, error = {:error, _, _}), do: error
-
-  defp mutation_body(_type, nil), do: ""
-  defp mutation_body(type, body), do: "#{type} { #{body} }"
-
-  defp quad_body(quads) do
+  defp validate(ops) do
+    quads = for {_, quads} <- ops, quad <- quads, do: quad
     cond do
-      Enum.any?(quads, fn q -> invalid_chars?(q[:subject]) end) -> {:error, :invalid_request, :subject}
-      Enum.any?(quads, fn q -> invalid_chars?(q[:predicate]) end) -> {:error, :invalid_request, :predicate}
-      Enum.any?(quads) -> {:ok, build_quad_body(quads)}
-      true -> {:ok, nil}
+      Enum.any?(quads, fn {q} -> invalid_chars?(q[:subject]) end) -> {:error, :invalid_request, :subject}
+      Enum.any?(quads, fn {q} -> invalid_chars?(q[:predicate]) end) -> {:error, :invalid_request, :predicate}
+      true -> {:ok, ops}
     end
   end
 
@@ -68,7 +69,7 @@ defmodule Dgraph do
     (quads |> Enum.map(fn q -> quad_string(q) end) |> Enum.join(" .\n")) <> " ."
   end
 
-  defp quad_string([subject: subj, predicate: pred, object: obj]) do
+  defp quad_string({[subject: subj, predicate: pred, object: obj]}) do
     "<#{subj}> <#{pred}> " <> object_string(obj)
   end
 
@@ -96,12 +97,12 @@ defmodule Dgraph do
     end)
   end
 
-  defp query_root(xid, body), do: {:ok, "{ me(_xid_: #{xid}) { #{body} } }"}
+  defp query_node(xid, body), do: {:ok, "{ node(_xid_: #{xid}) { #{body} } }"}
 
   defp query_body(request) do
     request 
       |> Enum.map(fn {k, v} -> query_term(k, v) end)
-      |> Enum.concat(["_xid_"])
+      |> Enum.concat([@id_pred])
       |> Enum.join(" ")
   end
 
@@ -113,7 +114,7 @@ defmodule Dgraph do
   defp query_term(_property, _value), do: ""
 
   defp execute({:ok, query}) do
-    IO.inspect query
+    IO.inspect {:dgraph_request, query}
     case post("/query", query) do
       {:ok, %Response{body: %{"code" => @success_code, "message" => message}}} -> 
         {:ok, message}

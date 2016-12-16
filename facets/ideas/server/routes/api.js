@@ -19,5 +19,9 @@ router.put("/ideas/:id", (req, res) => {
   res.json(ideasRepo.updateIdea(req.body));
 });
 
+router.post("/init", (req, res) => {
+  res.json(ideasRepo.init());
+})
+
 
 module.exports = router;

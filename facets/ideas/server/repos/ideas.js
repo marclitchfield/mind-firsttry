@@ -61,6 +61,21 @@ class IdeasRepo {
       .catch(err => undefined);
   }
 
+  init() {
+    const payload = [{ 
+      props: { id: "idea" }, { links: { "is": "concept" } } 
+    }].concat(SUPPORTED_TYPES.map(type => { 
+      return { 
+        props: { id: type }, links: { "is": "idea" }
+      }
+    }));
+
+    return axios
+      .post(join(config.api_url, 'graph'), payload) 
+      .then(() => "initialized")
+      .catch(err => undefined);
+  }
+
 }
 
 function queryProperties() {
