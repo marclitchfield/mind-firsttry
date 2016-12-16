@@ -133,8 +133,12 @@ query_graph $node2 '{ "body": true, "parent": { "body": true } }'
 To mutate multiple nodes:
 
 ```fish
-mutate_graph '{ "'$node1'": { "props": { "confidence": "81" } }, "'$node2'": { "props": { "confidence": "95" } } }'
-query_graph $node1 '{ "body": true, "confidence": true, "therefore": { "body": true, "confidence": true } }'
+mutate_graph '{ 
+  "'$node1'": { "props": { "confidence": "81" } }, 
+  "'$node2'": { "props": { "confidence": "95" } } 
+}'
+query_graph $node1 '{ "body": true, "confidence": true, 
+  "therefore": { "body": true, "confidence": true } }'
 ```
 ```
 {
