@@ -1,7 +1,6 @@
 defmodule Dgraph do
   use HTTPoison.Base
   alias HTTPoison.Response
-  import IEx
 
   @success_code "ErrorOk"
   @id_pred "id"

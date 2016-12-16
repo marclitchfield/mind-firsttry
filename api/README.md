@@ -28,108 +28,111 @@ To run the tests, ensure the mind-db is running, and run:
 mix test
 ```
 
+## API
+
+The API exposes the following endpoints
+
+| verb | endpoint    | payload format       | description                | fish command       |
+| :--- | :---------- | :------------------- | :------------------------- | :----------------- |
+| POST | /node       | ```node_mutation```  | creates a new node         | ```new_node```     |
+| POST | /node/:id   | ```node_mutation```  | mutates a node             | ```mutate_node```  |
+| POST | /graph      | ```graph_mutation``` | mutates multiple nodes     | ```mutate_graph``` |
+| POST | /query      | ```query```          | queries the graph          | ```query_graph```  |
+
+### Payload formats
+
+The ```node_mutation``` format has the following keys:
+
+* **props**: properties to set on the node. Value is a map of properties.
+* **in**: links to create to this node. Value is a map of predicates and source node ids.
+* **out**: links to create from this node. Value is a map of predicates and target node ids.
+* **del**: outbound links to delete from this node. Value is a map of predicates and target node ids.
+
+The ```graph_mutation``` format is a map, where the keys are the node ids to mutate, and the value is a ```node_mutation```. 
+
+The ```query_mutation``` is a map of the properties or links to be retrieved. The value controls whether
+or property or a link is selected for the given key. 
+
+* When the value is true, a property selected for the given key.
+* When the value is a map, a link is selected for the given key.
+
+
 ## Usage
 
-These steps outline how to interact with the mind-api using curl
+To interact with the mind-api from the command line, there are fish shell commands available in ```scripts/commands.fish```.
+These commands are simple wrappers around curl, and are not required for making calls to the mind-api. 
 
-### Initialize the mind
-```
-curl localhost:9000/init -XPOST -H "Content-Type: application/json"
-```
-
-### Post a node
-
-To create a node, provide a source and predicate in the url, and properties and links in the payload. 
-The 'is' link is the only required value for the new node. Try creating a node
-that is linked to the built in 'self' node:
-
-```
-curl localhost:9000/graph/self/root -XPOST -H "Content-Type: application/json" -d '{
-  "properties": { "body": "I think" },
-  "links": { "is": "idea" }
-}'
-```
-This creates a new node that is linked to 'self' by the 'root' predicate. 
-It outputs the xid generated for the node, e.g. ```f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1```
-
-### Post another node
-
-Now try creating another node that is linked to the first node you created:
-
-```
-curl localhost:9000/graph/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1/therefore -XPOST -H "Content-Type: application/json" -d '{
-  "properties": { "body": "I am" },
-  "links": { "is": "idea" }
-}'
-```
-
-### Get a node
-
-To retrieve a node, post to the query endpoint with a json structure that describes the fields that should be returned.
-In this example, the body is returned:
-```
-curl "localhost:9000/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
-  "body": true, "is": {}
-}'
-```
-```javascript
-{
-  me: {
-    is: { id: "idea" },
-    body: "I think",
-    id: "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1"
-  }
-}
-```
-
-
-### Get related nodes
-
-You can also traverse predicates in the graph to select related nodes, and the desired properties.
-
-```
-curl "localhost:9000/query/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1" -XPOST -H "Content-Type: application/json" -d '{
-  "body": true,
-  "therefore": {
-    "body": true
-  }
-}'
-```
-```javascript
-{
-  me: {
-    id: "f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1",
-    body: "I think",
-    therefore: { id: "160ddbcd-ac81-4de0-b055-d01555d1a59c", body: "I am" }
-  }
-}
-```
-
-### Delete a relationship
-
-To delete a relationship, send a DELETE with the subject, predicate, and object (S P O) triple to delete. 
-(note: dgraph doesn't seem to have a node deletion capability... will research more)
-
-```
-curl localhost:9000/graph/self/root/f729e7bf-e7d2-4ea6-a3b5-dc815e8c54c1 -XDELETE
-```
-
-The node should no longer appear in the results from ```/query/self``` when querying with the 'root' predicate.
-
-
-## fish functions
-
-There are fish shell functions available in ```scripts/commands.fish``` that make
-it easier to interact with the api from the command line. These functions are simple wrappers around curl.
-
-To use the scripts with fish shell, dot-source the commands and set the MIND_API_URL environment variable 
-to ```http://localhost:5008``` if you are using the mind-db docker container.
-
-Some example commands:
+To create a new node with properties, using the "props" operation:
 
 ```fish
-set xid (new_node self root idea "I think")
-new_node $xid therefore idea "I am"
-query_graph $xid '{ "body": true, "therefore": { "body": true } }'
-delete_link self root $xid
+set node1 (new_node '{ "props": { "body": "I think" }}')
+query_graph $node1 '{ "body": true }'
 ```
+Returns
+```
+{"id": "cab672fd-0439-4acd-bf9a-8114d24a9553", "body": "I think"}⏎
+```
+
+To create another node and link it to the first using the "in" operation:
+
+```fish
+set node2 (new_node '{ "props": { "body": "I am" }, "in": { "reason": "'$node1'" } }')
+query_graph $node1 '{ "body": true, "reason": { "body": true } }'
+```
+Returns
+```
+{
+  id: "cab672fd-0439-4acd-bf9a-8114d24a9553",
+  body: "I think",
+  therefore: [{ id: "60a98113-2c25-4783-968f-008e4b072d65", body: "I am" }]
+}
+```
+
+To mutate an existing node using the "out" operation":
+
+```fish
+mutate_node $node2 '{ "out": { "parent": "'$node1'" } }'
+query_graph $node2 '{ "body": true, "parent": { "body": true } }'
+```
+Returns
+```
+{
+  id: "60a98113-2c25-4783-968f-008e4b072d65",
+  body: "I am",
+  parent: [{ id: "cab672fd-0439-4acd-bf9a-8114d24a9553", body: "I think" }]
+}
+```
+
+To mutate multiple nodes:
+
+```fish
+mutate_graph '{ "'$node1'": { "props": { "confidence": "81" } }, "'$node2'": { "props": { "confidence": "95" } } }'
+query_graph $node1 '{ "body": true, "confidence": true, "therefore": { "body": true, "confidence": true } }'
+```
+Returns
+```
+{
+  id: "cab672fd-0439-4acd-bf9a-8114d24a9553",
+  body: "I think",
+  confidence: "81"
+  therefore: [
+    {
+      id: "60a98113-2c25-4783-968f-008e4b072d65",
+      body: "I am",
+      confidence: "95"
+    }
+  ],
+}
+```
+
+To delete links between nodes, you can use either mutate function with a "del" operation. 
+
+```fish
+mutate_node $node2 '{ "del": { "parent": "'$node1'" } }'
+query_graph $node2 '{ "body": true, "parent": { "body": true } }'
+```
+Returns
+```
+{"id":"60a98113-2c25-4783-968f-008e4b072d65","body":"I am"}
+```
+
