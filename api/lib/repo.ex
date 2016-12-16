@@ -1,6 +1,7 @@
 defmodule MindRepo do
   @type_prop "is"
   @links_prop "links"
+  @xid_pred "_xid_"
   @created_pred "created.at"
   @types %{
     :space => "Space",
@@ -61,8 +62,9 @@ defmodule MindRepo do
 
   defp new_node_quads(subject, predicate, object) do
     object_quad = Dgraph.quad(subject, predicate, [node: object])
+    xid_quad = Dgraph.quad(object, @xid_pred, [value: object])
     created_quad = Dgraph.quad(object, @created_pred, [value: (DateTime.utc_now |> DateTime.to_string) ])
-    [object_quad, created_quad]
+    [object_quad, xid_quad, created_quad]
   end
 
   defp transform_xids(graph) when is_map(graph) do

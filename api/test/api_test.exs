@@ -39,7 +39,7 @@ defmodule ApiTest do
   test "node has valid 'is' predicate" do
     id = post_node().resp_body
     response = query_node(id, [body: true, is: %{}]) |> to_json
-    assert response.is.id == @default_type
+    assert response.is != nil
   end
 
   test "get related nodes" do
@@ -47,7 +47,7 @@ defmodule ApiTest do
     id_object = post_node(subject: id_subject).resp_body
     response = query_node(id_subject, %{@default_predicate => %{}}) |> to_json
     assert response.id == id_subject
-    assert response[@default_predicate].id == id_object
+    assert Enum.at(response[@default_predicate], 0).id == id_object
   end
 
   test "get multiple related nodes" do
@@ -73,9 +73,10 @@ defmodule ApiTest do
     id_object = post_node().resp_body
     post_link(subject: id_subject, object: id_object, props: [newprop: "new"], links: [newlink: id_object])
     response = query_node(id_subject, %{@default_predicate => [newprop: true, newlink: %{}]}) |> to_json
-    assert response[@default_predicate].id == id_object
-    assert response[@default_predicate].newprop == "new"
-    assert response[@default_predicate].newlink.id == id_object
+    linked = Enum.at(response[@default_predicate], 0)
+    assert linked.id == id_object
+    assert linked.newprop == "new"
+    assert Enum.at(linked.newlink, 0).id == id_object
   end
 
   test "delete relationship" do
@@ -98,11 +99,13 @@ defmodule ApiTest do
   end
 
   test "update node properties" do
-    id = post_node().resp_body
-    update_node(id, [body: "updated_body"], [is: "updated_type"], [is: @default_type])
-    updated = query_node(id, [body: true, is: %{}]) |> to_json
+    id_object1 = post_node().resp_body
+    id_object2 = post_node().resp_body
+    id_subject = post_node(links: [linksto: id_object1] ++ @default_links).resp_body
+    update_node(id_subject, [body: "updated_body"], [linksto: id_object2], [linksto: id_object1])
+    updated = query_node(id_subject, [body: true, linksto: %{}]) |> to_json
     assert updated.body == "updated_body"
-    assert updated.is.id == "updated_type"
+    assert Enum.at(updated.linksto, 0).id == id_object2
   end
 
   defp post_node(options \\ []) do
@@ -144,7 +147,7 @@ defmodule ApiTest do
 
   defp to_json(response) do
     case response.status do
-      200 -> response.resp_body |> Poison.decode!(keys: :atoms)
+      200 -> Enum.at(response.resp_body |> Poison.decode!(keys: :atoms), 0)
       _ -> flunk response.resp_body
     end
   end

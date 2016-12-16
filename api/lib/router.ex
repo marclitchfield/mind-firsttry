@@ -39,7 +39,7 @@ defmodule MindRouter do
   end
 
   defp respond(conn, :ok), do: send_resp(conn, 200, "Success")
-  defp respond(conn, {:ok, results}) when is_map(results), do: send_resp(conn, 200, results |> Poison.encode!)
+  defp respond(conn, {:ok, results}) when is_map(results) or is_list(results), do: send_resp(conn, 200, results |> Poison.encode!)
   defp respond(conn, {:ok, message}), do: send_resp(conn, 200, message)
   defp respond(conn, {:error, :invalid_request, details}), do: send_resp(conn, 400, "Invalid request: #{details}")
   defp respond(conn, {:error, err}), do: send_resp(conn, 500, "Server error: #{err}")

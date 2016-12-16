@@ -3,7 +3,7 @@ defmodule Dgraph do
   alias HTTPoison.Response
   @success_code "ErrorOk"
   @invalid_request_code "ErrorInvalidRequest"  
-  @valid_id_regex ~r/^[a-zA-Z0-9.-]*$/
+  @valid_id_regex ~r/^[a-zA-Z0-9.\-_]*$/
   @escape_entities [
     {"&", "&amp;"},
     {"\"", "&quot;"},
@@ -113,7 +113,7 @@ defmodule Dgraph do
   defp query_term(_property, _value), do: ""
 
   defp execute({:ok, query}) do
-    IO.puts(query)
+    IO.inspect query
     case post("/query", query) do
       {:ok, %Response{body: %{"code" => @success_code, "message" => message}}} -> 
         {:ok, message}
