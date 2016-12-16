@@ -96,7 +96,6 @@ To create a new node with properties, using the "props" operation:
 set node1 (new_node '{ "props": { "body": "I think" }}')
 query_graph $node1 '{ "body": true }'
 ```
-Returns
 ```
 {"id": "cab672fd-0439-4acd-bf9a-8114d24a9553", "body": "I think"}⏎
 ```
@@ -107,7 +106,6 @@ To create another node and link it to the first using the "in" operation:
 set node2 (new_node '{ "props": { "body": "I am" }, "in": { "reason": "'$node1'" } }')
 query_graph $node1 '{ "body": true, "reason": { "body": true } }'
 ```
-Returns
 ```
 {
   id: "cab672fd-0439-4acd-bf9a-8114d24a9553",
@@ -123,7 +121,6 @@ To mutate an existing node using the "out" operation":
 mutate_node $node2 '{ "out": { "parent": "'$node1'" } }'
 query_graph $node2 '{ "body": true, "parent": { "body": true } }'
 ```
-Returns
 ```
 {
   id: "60a98113-2c25-4783-968f-008e4b072d65",
@@ -139,7 +136,6 @@ To mutate multiple nodes:
 mutate_graph '{ "'$node1'": { "props": { "confidence": "81" } }, "'$node2'": { "props": { "confidence": "95" } } }'
 query_graph $node1 '{ "body": true, "confidence": true, "therefore": { "body": true, "confidence": true } }'
 ```
-Returns
 ```
 {
   id: "cab672fd-0439-4acd-bf9a-8114d24a9553",
@@ -162,7 +158,6 @@ To delete links between nodes, you can use either mutate function with a "del" o
 mutate_node $node2 '{ "del": { "parent": "'$node1'" } }'
 query_graph $node2 '{ "body": true, "parent": { "body": true } }'
 ```
-Returns
 ```
 {"id":"60a98113-2c25-4783-968f-008e4b072d65","body":"I am"}
 ```
