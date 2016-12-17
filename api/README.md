@@ -42,20 +42,31 @@ The API exposes the following endpoints
 ### Payload formats
 
 #### ```node_mutation```
-Contains operations for how the node should be mutated. Any combination of operations can be provided.
+Contains operations for how the node should be mutated. The following operations are supported:
 
-```javascript
-{
-  "props": {},
-  "in": {},
-  "out": {},
-  "del": {}
-}
-```
 * **props**: properties to set on the node. Value is a map of properties.
 * **in**: links to create to this node. Value is a map of predicates and source node ids.
 * **out**: links to create from this node. Value is a map of predicates and target node ids.
 * **del**: outbound links to delete from this node. Value is a map of predicates and target node ids.
+
+For example:
+
+```javascript
+{
+  "props": { "a": "A", "b": "B" },
+  "in": { "x": "xx", "y": "yy" },
+  "out": { "m": "mm", "n": "nn" },
+  "del": { "d": "dd", "e": "ee" }
+}
+```
+This example will do the following:
+
+* Add a=A and b=B props to the node
+* Add outbound links: node-[x]->xx, node-[y]->yy
+* Add inbound links: mm-[m]->node, nn-[n]->node
+* Remove outbound links: node-[d]->dd, node-[e]->ee
+
+All operations are optional, and any combination can be provided.
 
 #### ```graph_mutation``` 
 Contains a map of node ids and corresponding ```node_mutation``` operations.
