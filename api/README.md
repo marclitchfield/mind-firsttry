@@ -67,7 +67,7 @@ Contains a map of node ids and corresponding ```node_mutation``` operations.
 }
 ```
 
-#### ```query_mutation``` 
+#### ```query``` 
 Specifies the data that should be returned from the graph.
 
 ```javascript
