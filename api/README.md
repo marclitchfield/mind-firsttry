@@ -61,15 +61,16 @@ For example:
 ```
 This example will do the following:
 
-* Add a=A and b=B props to the node
-* Add outbound links: node-[x]->xx, node-[y]->yy
-* Add inbound links: mm-[m]->node, nn-[n]->node
-* Remove outbound links: node-[d]->dd, node-[e]->ee
+* Add ```a=A``` and ```b=B``` props to the node
+* Add outbound links: ```node-[x]->xx```, ```node-[y]->yy```
+* Add inbound links: ```mm-[m]->node```, ```nn-[n]->node```
+* Remove outbound links: ```node-[d]->dd```, ```node-[e]->ee```
 
 All operations are optional, and any combination can be provided.
 
 #### ```graph_mutation``` 
-Contains a map of node ids and corresponding ```node_mutation``` operations.
+
+Contains a map of node ids and corresponding ```node_mutation``` operations to be applied.
 
 ```javascript
 {
@@ -79,20 +80,31 @@ Contains a map of node ids and corresponding ```node_mutation``` operations.
 ```
 
 #### ```query``` 
-Specifies the data that should be returned from the graph.
+Specifies the data that should be returned from the graph. The query is a map with two types of values:
+
+* When the value is true, a property selected for the given key.
+* When the value is a map, a link is selected for the given key. Nested properties and links can be retrieved.
+
+For example:
 
 ```javascript
 {
   "prop1": true,
   "prop2": true,
-  "link1": {
-    "prop3": true
+  "child": {
+    "prop3": true,
+    "child": {
+      "prop4": true
+    }
   }
 }
 ```
 
-* When the value is true, a property selected for the given key.
-* When the value is a map, a link is selected for the given key. Nested properties and links can be retrieved.
+This will retrieve the following:
+* The ```prop1``` and ```prop2``` properties for the node.
+* Nodes related by the ```child``` predicate, along with the ```prop3``` property.
+* Nodes related to the children by the ```child``` predicate (the grandchildren), along with the ```prop4``` property.
+* Built-in properties like ```id``` and ```created``` for each node
 
 
 ## Usage
