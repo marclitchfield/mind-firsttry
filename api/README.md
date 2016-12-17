@@ -61,7 +61,7 @@ For example:
 ```
 This example will do the following:
 
-* Add ```a=A``` and ```b=B``` props to the node
+* Add or update ```a=A``` and ```b=B``` props to the node
 * Add outbound links: ```node-[x]->xx```, ```node-[y]->yy```
 * Add inbound links: ```mm-[m]->node```, ```nn-[n]->node```
 * Remove outbound links: ```node-[d]->dd```, ```node-[e]->ee```
