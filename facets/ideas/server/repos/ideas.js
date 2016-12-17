@@ -20,9 +20,7 @@ class IdeasRepo {
         [CHILD_PREDICATE]: queryProperties({ children: false, parents: false }) 
       })
       .then(response => {
-        const x = [].concat(response.data[CHILD_PREDICATE] || []).map((idea) => toIdea(idea));
-        console.log('*** x', x);
-        return x;
+        return [].concat(response.data[CHILD_PREDICATE] || []).map((idea) => toIdea(idea));
       });
   }
 
@@ -88,7 +86,6 @@ function queryProperties({ children, parents }) {
 }
 
 function toIdea(ideaResponse) {
-  //console.log('*** toIdea enter');
   return {
     id: ideaResponse.id,
     body: ideaResponse.body,
