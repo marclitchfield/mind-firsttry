@@ -12,8 +12,6 @@ const CHILD_PREDICATE = "idea.child";
 
 class IdeasRepo {
 
- // Investigate: if catch statements are removed, "Max promises reached" error is triggered by caller
-
   getIdeas() {
     return axios
       .post(join(config.api_url, "query", ROOT_SUBJECT), { 
@@ -38,13 +36,13 @@ class IdeasRepo {
       props: { body: idea.body },
       out: { [PARENT_PREDICATE]: subject, is: type || DEFAULT_TYPE },
       in: { [CHILD_PREDICATE]: subject }
-    }
+    };
+
     return axios
       .post(join(config.api_url, "node"), payload)
       .then(response => {
         return Object.assign({}, payload.props, { id: response.data, type: type });
-      })
-      .catch(err => undefined);
+      });
   }
 
   updateIdea(idea) {
@@ -52,7 +50,8 @@ class IdeasRepo {
       props: { body: idea.body },
       out: idea._previous_type === idea.type ? {} : { is: idea.type },
       del: idea._previous_type === idea.type ? {} : { is: idea._previous_type }
-    }
+    };
+
     return axios
       .post(join(config.api_url, `node/${idea.id}`), payload)
       .then(response => { return idea })
