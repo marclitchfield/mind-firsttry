@@ -76,7 +76,6 @@ defmodule ApiTest do
     assert response.body == @special_chars
   end
 
-  @tag :wip
   test "post with special characters in link returns error" do
     source = post_node()
     resp = call_post("/node", [out: %{ @special_chars => source }])

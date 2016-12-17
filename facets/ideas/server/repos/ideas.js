@@ -7,8 +7,8 @@ const STANDARD_PREDICATES = ["body", "created.at"];
 const TYPE_PREDICATE = "is";
 const DEFAULT_TYPE = "idea";
 const ROOT_SUBJECT = "ideas.facet";
-const ROOT_PREDICATE = "root.idea";
 const PARENT_PREDICATE = "idea.parent";
+const CHILD_PREDICATE = "idea.child";
 
 class IdeasRepo {
 
@@ -16,93 +16,87 @@ class IdeasRepo {
 
   getIdeas() {
     return axios
-      .post(join(config.api_url, "query", ROOT_SUBJECT), { [ROOT_PREDICATE]: queryProperties() })
-      .then(response => {
-        console.log(response);
-        return [].concat(response.data[ROOT_PREDICATE] || []).map((idea) => toIdea(idea));
+      .post(join(config.api_url, "query", ROOT_SUBJECT), { 
+        [CHILD_PREDICATE]: queryProperties({ children: false, parents: false }) 
       })
-      .catch(err => console.log('err', err));
+      .then(response => {
+        const x = [].concat(response.data[CHILD_PREDICATE] || []).map((idea) => toIdea(idea));
+        console.log('*** x', x);
+        return x;
+      });
   }
 
   getIdea(id) {
     return axios
-      .post(join(config.api_url, "query", id), queryProperties())
+      .post(join(config.api_url, "query", id), queryProperties({ children: true, parents: true }))
       .then(response => {
-        return toIdea(response.data)
-      })
-      .catch(err => undefined); 
+        return toIdea(response.data);
+      });
   }
 
   createIdea(idea, parent, type) {
+    const subject = parent === undefined ? ROOT_SUBJECT : parent;
     const payload = {
       props: { body: idea.body },
-      links: Object.assign({
-        [TYPE_PREDICATE]: type || DEFAULT_TYPE
-      }, parent !== undefined ? { [PARENT_PREDICATE]: parent } : {})
+      out: { [PARENT_PREDICATE]: subject, is: type || DEFAULT_TYPE },
+      in: { [CHILD_PREDICATE]: subject }
     }
-    const resource = parent === undefined ? join(ROOT_SUBJECT, ROOT_PREDICATE) : join(parent, type);
     return axios
-      .post(join(config.api_url, "graph", resource), payload)
+      .post(join(config.api_url, "node"), payload)
       .then(response => {
         return Object.assign({}, payload.props, { id: response.data, type: type });
       })
-      .catch(err => undefined); 
+      .catch(err => undefined);
   }
 
   updateIdea(idea) {
     const payload = {
       props: { body: idea.body },
-      links: idea.type === undefined ? {} : { [TYPE_PREDICATE]: idea.type },
-      removals: idea._previous_type === idea.type ? {} : { [TYPE_PREDICATE]: idea._previous_type }
+      out: idea._previous_type === idea.type ? {} : { is: idea.type },
+      del: idea._previous_type === idea.type ? {} : { is: idea._previous_type }
     }
     return axios
-      .post(join(config.api_url, `graph/${idea.id}`), payload)
+      .post(join(config.api_url, `node/${idea.id}`), payload)
       .then(response => { return idea })
       .catch(err => undefined);
   }
 
   init() {
-    const payload = [{ 
-      props: { id: "idea" }, { links: { "is": "concept" } } 
-    }].concat(SUPPORTED_TYPES.map(type => { 
-      return { 
-        props: { id: type }, links: { "is": "idea" }
-      }
-    }));
+    const payload = SUPPORTED_TYPES.reduce((map, type) =>
+      Object.assign({}, map, {
+        [type]: {
+          props: { id: type }, 
+          out: { is: "idea" }, 
+          in: { type: "idea" }
+        }
+      }), { idea: { props: { id: "idea" } } });
 
     return axios
       .post(join(config.api_url, 'graph'), payload) 
       .then(() => "initialized")
       .catch(err => undefined);
   }
-
 }
 
-function queryProperties() {
-  const node = () => STANDARD_PREDICATES.reduce((props, p) => Object.assign({}, props, { [p]: true }), { [TYPE_PREDICATE]: {} });
-  const predicates = SUPPORTED_TYPES.concat(PARENT_PREDICATE);
-  return predicates.reduce((props, p) => Object.assign({}, props, { [p]: node() }), node());
+function queryProperties({ children, parents }) {
+  const node = () => STANDARD_PREDICATES.reduce((props, p) => 
+    Object.assign({}, props, { [p]: true, is: {} }), {});
+
+  return Object.assign(node(), 
+    parents ? { [PARENT_PREDICATE]: node() } : {},
+    children ? { [CHILD_PREDICATE]: node() } : {});
 }
 
 function toIdea(ideaResponse) {
+  //console.log('*** toIdea enter');
   return {
     id: ideaResponse.id,
-    type: (ideaResponse.is || {}).id,
     body: ideaResponse.body,
+    type: ideaResponse.is[0].id,
     created: ideaResponse['created.at'],
-    children: childIdeas(ideaResponse),
-    parents: parentIdeas(ideaResponse)
+    children: (ideaResponse[CHILD_PREDICATE] || []).map(i => toIdea(i)),
+    parents: (ideaResponse[PARENT_PREDICATE] || []).map(i => toIdea(i))
   };
-}
-
-function childIdeas(ideaResponse) {
-  return SUPPORTED_TYPES.reduce((children, t) => {
-    return children.concat([].concat(ideaResponse[t] || []).map(i => toIdea(i)));
-  }, []);
-}
-
-function parentIdeas(ideaResponse) {
-  return [].concat(ideaResponse[PARENT_PREDICATE] || []).map(i => toIdea(i));
 }
 
 export default new IdeasRepo();
