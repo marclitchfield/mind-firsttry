@@ -11,7 +11,6 @@ select:focus {
 }
 
 div[data-reactroot] {
-  background-color: white !important;
   padding: 0 !important;
   border: none !important;
 }
@@ -163,4 +162,38 @@ div[role=menu] .button {
 
 .idea .body {
   display: inline;
+}
+
+
+.delete-confirm-modal {
+  font-size: 1em;
+}
+
+.delete-confirm-modal .title {
+  margin: 0;
+  font-weight: bold;
+  padding: 8px;
+  background-color: darkslategray;
+  color: white;
+}
+
+.delete-confirm-modal .question {
+  margin: 14px;
+} 
+
+.delete-confirm-modal .warning {
+  color: #dc4830;
+  margin: 18px 14px;
+}
+
+.delete-confirm-modal .idea {
+  margin: 0 14px;
+}
+
+.delete-confirm-modal .warning span {
+  font-weight: bold;
+}
+
+.delete-confirm-modal .buttons {
+  margin: 20px 14px 0 14px;
 }

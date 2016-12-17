@@ -14,9 +14,23 @@ export default handleActions({
     });
   },
 
-  SUBMIT_ROOT_IDEA_FULFILLED: (state, action) => {
+  FETCH_IDEA_FULFILLED: (state, action) => {
+    return Object.assign({}, state, {
+      selectedIdea: action.payload
+    });
+  },
+
+  CREATE_ROOT_IDEA_FULFILLED: (state, action) => {
     return Object.assign({}, state, {
       rootIdeas: (state.rootIdeas || []).concat(action.payload)
+    });
+  },
+
+  CREATE_IDEA_FULFILLED: (state, action) => {
+    return Object.assign({}, state, {
+      selectedIdea: Object.assign({}, state.selectedIdea, {
+        children: state.selectedIdea.children.concat(action.payload)
+      })
     });
   },
 
@@ -28,17 +42,9 @@ export default handleActions({
     });
   },
   
-  FETCH_IDEA_FULFILLED: (state, action) => {
+  DELETE_IDEA_FULFILLED: (state, action) => {
     return Object.assign({}, state, {
-      selectedIdea: action.payload
-    });
-  },
-
-  SUBMIT_IDEA_FULFILLED: (state, action) => {
-    return Object.assign({}, state, {
-      selectedIdea: Object.assign({}, state.selectedIdea, {
-        children: state.selectedIdea.children.concat(action.payload)
-      })
+      rootIdeas: (state.rootIdeas || []).filter(idea => idea.id !== action.payload.id)
     });
   }
 

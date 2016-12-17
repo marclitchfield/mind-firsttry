@@ -13,11 +13,25 @@ export function fetchRootIdeas() {
   }
 }
 
-export function submitRootIdea(idea) {
+export function fetchIdea(id) {
   return {
-    type: "SUBMIT_ROOT_IDEA",
+    type: "FETCH_IDEA",
+    payload: axios.get(`/api/ideas/${id}`).then(response => response.data)
+  }
+}
+
+export function createRootIdea(idea) {
+  return {
+    type: "CREATE_ROOT_IDEA",
     payload: axios.post("/api/ideas", { body: idea.body }).then(response => response.data)
   }  
+}
+
+export function createIdea(idea, parent, type) {
+  return {
+    type: "CREATE_IDEA",
+    payload: axios.post(`/api/ideas/${parent}/${type}`, { body: idea.body }).then(response => response.data)
+  }
 }
 
 export function updateIdea(idea) {
@@ -27,16 +41,9 @@ export function updateIdea(idea) {
   }
 }
 
-export function fetchIdea(id) {
+export function deleteIdea(idea) {
   return {
-    type: "FETCH_IDEA",
-    payload: axios.get(`/api/ideas/${id}`).then(response => response.data)
-  }
-}
-  
-export function submitIdea(idea, parent, type) {
-  return {
-    type: "SUBMIT_IDEA",
-    payload: axios.post(`/api/ideas/${parent}/${type}`, { body: idea.body }).then(response => response.data)
+    type: "DELETE_IDEA",
+    payload: axios.delete(`/api/ideas/${idea.id}`).then(response => response.data)
   }
 }

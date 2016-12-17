@@ -1,10 +1,12 @@
 import React from "react";
 import { Link } from "react-router";
+import Mousetrap from "mousetrap";
 import { MenuList, MenuItem, MenuButton, Dropdown } from "react-menu-list";
 import Modal from "react-modal";
 import IdeaType from "./IdeaType";
 import IdeaList from "./IdeaList";
 import IdeaSubmit from "./IdeaSubmit";
+import DeleteConfirmModal from "./modals/DeleteConfirm";
 import moment from "moment";
 import _ from "lodash/core";
 
@@ -24,28 +26,48 @@ export default class SelectedIdea extends React.Component {
     this.handleSubmitNew = this.handleSubmitNew.bind(this);
     this.handleSubmitEdit = this.handleSubmitEdit.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
-    this.confirmDeleteIdea = this.confirmDeleteIdea.bind(this);
     this.openDeleteConfirmModal = this.openDeleteConfirmModal.bind(this);
     this.closeDeleteConfirmModal = this.closeDeleteConfirmModal.bind(this);
-    this.renderDeleteConfirmModal = this.renderDeleteConfirmModal.bind(this);
+    this.onDeleteConfirmed = this.onDeleteConfirmed.bind(this);
+    this.transitionToSubmitNew = this.transitionToSubmitNew.bind(this);
+    this.transitionToSubmitEdit = this.transitionToSubmitEdit.bind(this);
   }
 
   render() {
     const { selectedIdea } = this.props;
     const showType = selectedIdea.parents && selectedIdea.parents.length > 0;
     return (
-      <div className="idea selected">
+      <div className="idea selected" onKeyPress={this.handleKeyPress}>
         { this.renderParents(selectedIdea) }
         { this.route() === EDIT 
             ? this.renderEditor(selectedIdea, showType) 
             : this.renderSelection(selectedIdea, showType) }
         { this.route() === NEW ? this.renderSubmitNew() : null }
-        { this.renderDeleteConfirmModal() }
+        <DeleteConfirmModal isOpen={this.state.deleteModalIsOpen} idea={selectedIdea}
+          closeModal={this.closeDeleteConfirmModal} confirmModal={this.onDeleteConfirmed} />
         <div className="children">
           <IdeaList ideas={selectedIdea.children} />
         </div>
       </div>
-    ); 
+    );
+  }
+
+  componentDidMount() {
+    Mousetrap.bind(['c', 'c', "create new idea"], this.transitionToSubmitNew);
+    Mousetrap.bind(['e', 'e', "edit idea"], this.transitionToSubmitEdit);
+  }
+
+  componentWillUnmount() {
+    Mousetrap.unbind(['c', 'c', "create new idea"], this.transitionToSubmitNew);
+    Mousetrap.unbind(['e', 'e', "edit idea"], this.transitionToSubmitEdit);
+  }
+
+  transitionToSubmitNew() {
+    this.props.router.push(`/idea/${this.props.selectedIdea.id}/new`);
+  }
+
+  transitionToSubmitEdit() {
+    this.props.router.push(`/idea/${this.props.selectedIdea.id}/edit`);
   }
 
   route() {
@@ -79,7 +101,7 @@ export default class SelectedIdea extends React.Component {
   }
 
   handleSubmitNew(newIdea) {
-    this.props.actions.submitIdea(newIdea, this.props.selectedIdea.id, newIdea.type);
+    this.props.actions.createIdea(newIdea, this.props.selectedIdea.id, newIdea.type);
     this.props.router.replace(`/idea/${this.props.selectedIdea.id}`);
   }
   
@@ -92,10 +114,6 @@ export default class SelectedIdea extends React.Component {
     this.props.router.replace(`/idea/${this.props.selectedIdea.id}`);
   }
 
-  confirmDeleteIdea() {
-    this.openDeleteConfirmModal();
-  }
-
   openDeleteConfirmModal() {
     this.setState({ deleteModalIsOpen: true });
   }
@@ -104,17 +122,8 @@ export default class SelectedIdea extends React.Component {
     this.setState({ deleteModalIsOpen: false });
   }
 
-  renderDeleteConfirmModal() {
-    return (
-      <Modal
-        contentLabel="Confirm idea deletion" 
-        isOpen={this.state.deleteModalIsOpen} 
-        onRequestClose={this.closeDeleteConfirmModal}
-      >
-        <div>Are you sure you want to delete this idea</div>
-        <button onClick={this.closeDeleteConfirmModal} className="button">Cancel</button>
-      </Modal>
-    );
+  onDeleteConfirmed() {
+    this.setState({ deleteModalIsOpen: false });
   }
 
   renderOptionsMenu(selectedIdea) {
@@ -122,7 +131,7 @@ export default class SelectedIdea extends React.Component {
       <Dropdown>
         <MenuList>
           <MenuItem><Link to={`/idea/${selectedIdea.id}/edit`} className="button secondary">Edit</Link></MenuItem>
-          <MenuItem><div onClick={this.confirmDeleteIdea} className="button alert">Delete</div></MenuItem>
+          <MenuItem><div onClick={this.openDeleteConfirmModal} className="button alert">Delete</div></MenuItem>
         </MenuList>
       </Dropdown>
     );

@@ -9,7 +9,7 @@ export default class RootIdeas extends React.Component {
   }
 
   handleSubmit(idea) {
-    this.props.actions.submitRootIdea(idea);
+    this.props.actions.createRootIdea(idea);
   }
 
   render() {
