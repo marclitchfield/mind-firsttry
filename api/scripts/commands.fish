@@ -1,31 +1,17 @@
 #!/usr/local/bin/fish
 
-function new_node --description "new_node <subject> <predicate> <type> <body>"
-    curl "$MIND_API_URL/graph/$argv[1]/$argv[2]" -XPOST -H "Content-Type: application/json" -d "{
-        \"is\": \"$argv[3]\",
-        \"body\": \"$argv[4]\"
-    }"
+function query_graph --description "query_graph <id> <query>"
+    curl --fail --show-error --silent "$MIND_API_URL/query/$argv[1]" -XPOST -H "Content-Type: application/json" -d $argv[2]
 end
 
-function post_node --description "post_node <subject> <predicate> <properties>"
-    curl -v "$MIND_API_URL/graph/$argv[1]/$argv[2]" -XPOST -H "Content-Type: application/json" -d $argv[3]
+function new_node --description "new_node <payload:{ props, in, out, del }>"
+    curl --fail --show-error --silent "$MIND_API_URL/node" -XPOST -H "Content-Type: application/json" -d $argv[1]
 end
 
-function link_nodes --description "link_nodes <subject> <predicate> <object>"
-    curl "$MIND_API_URL/graph/$argv[1]/$argv[2]/$argv[3]" -XPOST -H "Content-Type: application/json" -d "{}" 
+function mutate_node --description "mutate_node <id> <payload:{ props, in, out, del }>"
+    curl --fail --show-error --silent "$MIND_API_URL/node/$argv[1]" -XPOST -H "Content-Type: application/json" -d $argv[2]
 end
 
-function query_node --description "query_node <subject> <predicate>"
-    curl "$MIND_API_URL/query/$argv[1]" -XPOST -H "Content-Type: application/json" -d "{
-        \"body\": true,
-        \"$argv[2]\": { \"body\": true }
-    }"
-end
-
-function query_graph --description "query_graph <subject> <query>"
-    curl "$MIND_API_URL/query/$argv[1]" -XPOST -H "Content-Type: application/json" -d $argv[2]
-end
-
-function delete_link --description "delete_link <subject> <predicate> <object>"
-    curl "$MIND_API_URL/graph/$argv[1]/$argv[2]/$argv[3]" -XDELETE
+function mutate_graph --description "mutate_graph <payload:{ id: { props, in, out, del } }>"
+    curl --fail --show-error --silent "$MIND_API_URL/graph" -XPOST -H "Content-Type: application/json" -d $argv[1]
 end

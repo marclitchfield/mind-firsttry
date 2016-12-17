@@ -16,6 +16,11 @@ To start the server and have it reload whenever files are changed, run
 npm run server-watch
 ```
 
+Before the facet can be used, it must be initialized. POST to the ```/api/init``` endpoint:
+```
+curl -v -XPOST http://localhost:9010/api/init
+```
+
 The server should now be available at ```http://localhost:9010```. 
 
 The server will restart whenever a file is changed, or if it crashes. To reload 

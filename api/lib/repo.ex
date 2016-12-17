@@ -1,69 +1,47 @@
 defmodule MindRepo do
-  @type_prop "is"
-  @links_prop "links"
+  @id_pred "id"
   @created_pred "created.at"
-  @types %{
-    :space => "Space",
-    :concept => "Concept",
-    :event => "Event",  
-    :person => "Person",
-    :object => "Object"
-  }
 
-  def new_node(subject, predicate, props) do
-    object = UUID.uuid4()
-    case Map.has_key?(props, @type_prop) do
-      true -> update(subject, predicate, object, props)
-      false -> {:error, :missing_predicate, @type_prop}
-    end
-  end
-
-  def link_nodes(subject, predicate, object, props) do
-    update(subject, predicate, object, props)
-  end
-
-  def query_nodes(id, request) do
-    Dgraph.query(id, request)
-  end
-
-  def delete_link(subject, predicate, object) do
-    Dgraph.delete([ Dgraph.quad(subject, predicate, [node: object]) ])
-  end
-
-  def initialize() do
-    self = Dgraph.quad(:self, :is, [node: :person])
-    types = @types |> Enum.map(fn({type, label}) -> Dgraph.quad(type, :label, [value: label]) end)
-    Dgraph.update([self] ++ types)
-  end
-
-  defp update(subject, predicate, object, props) do
-    object_type = key_values(@type_prop, props) 
-      |> Enum.map(fn type -> Dgraph.quad(object, @type_prop, [node: type]) end)
-    links = key_values(@links_prop, props)
-      |> Enum.map(fn {pred, link_obj} -> Dgraph.quad(object, pred, [node: link_obj]) end)
-    quads = new_node_quads(subject, predicate, object, props) ++ object_type ++ links
-    case Dgraph.update(quads) do
-      {:ok, _} -> {:ok, object}
+  def query_graph(id, query) do
+    case Dgraph.query(id, query) do
+      {:ok, response} -> {:ok, response["node"] |> Enum.at(0)}
       error -> error
     end
   end
 
-  defp key_values(key, props) do
-    case props do
-      %{^key => values} when is_map(values) -> values
-      %{^key => value} -> [value]
-      _ -> []
+  def new_node(mutations) do
+    id = UUID.uuid4()
+    ops = new_node_ops(id) ++ (mutations |> to_ops(id))
+    case Dgraph.mutate(ops) do
+      {:ok, _} -> {:ok, id}
+      error -> error
     end
   end
 
-  defp new_node_quads(subject, predicate, object, props) do
-    object_quad = Dgraph.quad(subject, predicate, [node: object])
-    created_quad = Dgraph.quad(object, @created_pred, [value: (DateTime.utc_now |> DateTime.to_string) ])
-    properties = props
-      |> Enum.reject(fn {k, _} -> k == @type_prop end)
-      |> Enum.reject(fn {k, _} -> k == @links_prop end)
-      |> Enum.map(fn {k, v} -> Dgraph.quad(object, k, [value: v]) end)
-    [object_quad, created_quad] ++ properties
+  def mutate_node(id, mutations) do
+    Dgraph.mutate(mutations |> to_ops(id))
+  end
+
+  def mutate_graph(mutations_map) do
+    quads = Enum.reduce(mutations_map, [], fn ({id, m}, acc) -> acc ++ (m |> to_ops(id)) end)
+    Dgraph.mutate(quads)
+  end
+
+  def to_ops(mutations, id) do
+    mutation_kw = Enum.map(mutations, fn({key, value}) -> {String.to_atom(key), value} end)
+    defaults = [props: [], in: [], out: [], del: []]
+    m = Keyword.merge(defaults, mutation_kw) |> Enum.into(%{})
+    prop_quads = m.props |> Enum.map(fn {p, o} -> Dgraph.quad(id, p, [value: o]) end)
+    in_quads = m.in |> Enum.map(fn {p, s} -> Dgraph.quad(s, p, [node: id]) end)
+    out_quads = m.out |> Enum.map(fn {p, o} -> Dgraph.quad(id, p, [node: o]) end)
+    del_quads = m.del |> Enum.map(fn {p, o} -> Dgraph.quad(id, p, [node: o]) end)
+    [set: prop_quads ++ in_quads ++ out_quads, del: del_quads]
+  end
+
+  defp new_node_ops(id) do
+    id_quad = Dgraph.quad(id, @id_pred, [value: id])
+    created_quad = Dgraph.quad(id, @created_pred, [value: (DateTime.utc_now |> DateTime.to_string) ])
+    [set: [id_quad, created_quad]]
   end
 
 end

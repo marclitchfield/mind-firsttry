@@ -3,6 +3,13 @@ body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
+select:focus {
+    border: 1px solid #8a8a8a;
+    box-shadow: 0 0 5px #cacaca;
+    outline: none;
+    transition: box-shadow 0.5s, border-color 0.25s ease-in-out;
+}
+
 div[data-reactroot] {
   background-color: white !important;
   padding: 0 !important;
@@ -126,13 +133,32 @@ div[role=menu] .button {
   display: inline-block;
   margin-right: 4px;
   vertical-align: top;
-  margin-top: 1px;
-  outline: 1px solid black;
+  border: 1px solid black;
   border-radius: .2em;
-  width: 5.7em;
+  width: 72px;
   color: black;
   text-align: center;
   font-size: .9em;
+}
+
+.submit-form {
+  position: relative;
+}
+
+.submit-form .idea-type-select {
+  height: 38px;
+}
+
+.submit-form .idea-type {
+  position: absolute;
+  left: 5px;
+  top: 12px;
+  display: inline-block;
+  font-size: 0;
+  vertical-align: middle;
+  width: 4px;
+  border: 1px solid #555;
+  height: 38px;
 }
 
 .idea .body {
