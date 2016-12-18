@@ -1,8 +1,14 @@
 import axios from "axios";
 
-export function recordInitialDataLoaded() {
+export function shouldFetch() {
   return {
-    type: "RECORD_INITIAL_DATA_LOADED"
+    type: "SHOULD_FETCH"
+  }
+}
+
+export function skipFetch() {
+  return {
+    type: "SKIP_FETCH"
   }
 }
 
@@ -44,6 +50,6 @@ export function updateIdea(idea) {
 export function deleteIdea(idea) {
   return {
     type: "DELETE_IDEA",
-    payload: axios.post("/api/ideas?delete", idea).then(response => response.data)
+    payload: axios.post("/api/idea/delete", idea).then(response => response.data)
   }
 }

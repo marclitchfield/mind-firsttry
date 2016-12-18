@@ -9,6 +9,7 @@ import IdeaSubmit from "./IdeaSubmit";
 import DeleteConfirmModal from "./modals/DeleteConfirm";
 import moment from "moment";
 import _ from "lodash/core";
+import { ROOT_TYPE } from "../constants";
 
 const EDIT = "edit";
 const NEW = "new";
@@ -23,25 +24,25 @@ export default class SelectedIdea extends React.Component {
     this.renderSelection = this.renderSelection.bind(this);
     this.renderSubmitNew = this.renderSubmitNew.bind(this);
     this.renderEditor = this.renderEditor.bind(this);
-    this.handleSubmitNew = this.handleSubmitNew.bind(this);
-    this.handleSubmitEdit = this.handleSubmitEdit.bind(this);
+    this.handleCreateSubmitted = this.handleCreateSubmitted.bind(this);
+    this.handleEditSubmitted = this.handleEditSubmitted.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
     this.openDeleteConfirmModal = this.openDeleteConfirmModal.bind(this);
     this.closeDeleteConfirmModal = this.closeDeleteConfirmModal.bind(this);
     this.onDeleteConfirmed = this.onDeleteConfirmed.bind(this);
-    this.transitionToSubmitNew = this.transitionToSubmitNew.bind(this);
-    this.transitionToSubmitEdit = this.transitionToSubmitEdit.bind(this);
+    this.transitionTo = this.transitionTo.bind(this);
+    this.transitionToCreateForm = this.transitionToCreateForm.bind(this);
+    this.transitionToEditForm = this.transitionToEditForm.bind(this);
   }
 
   render() {
     const { selectedIdea } = this.props;
-    const showType = selectedIdea.parents && selectedIdea.parents.length > 0;
     return (
       <div className="idea selected" onKeyPress={this.handleKeyPress}>
         { this.renderParents(selectedIdea) }
         { this.route() === EDIT 
-            ? this.renderEditor(selectedIdea, showType) 
-            : this.renderSelection(selectedIdea, showType) }
+            ? this.renderEditor(selectedIdea) 
+            : this.renderSelection(selectedIdea) }
         { this.route() === NEW ? this.renderSubmitNew() : null }
         <DeleteConfirmModal isOpen={this.state.deleteModalIsOpen} idea={selectedIdea}
           closeModal={this.closeDeleteConfirmModal} confirmModal={this.onDeleteConfirmed} />
@@ -53,65 +54,93 @@ export default class SelectedIdea extends React.Component {
   }
 
   componentDidMount() {
-    Mousetrap.bind(['c', 'c', "create new idea"], this.transitionToSubmitNew);
-    Mousetrap.bind(['e', 'e', "edit idea"], this.transitionToSubmitEdit);
+    Mousetrap.bind(['c', 'c', "create new idea"], this.transitionToCreateForm);
+    Mousetrap.bind(['e', 'e', "edit idea"], this.transitionToEditForm);
   }
 
   componentWillUnmount() {
-    Mousetrap.unbind(['c', 'c', "create new idea"], this.transitionToSubmitNew);
-    Mousetrap.unbind(['e', 'e', "edit idea"], this.transitionToSubmitEdit);
+    Mousetrap.unbind(['c', 'c', "create new idea"], this.transitionToCreateForm);
+    Mousetrap.unbind(['e', 'e', "edit idea"], this.transitionToEditForm);
   }
 
-  transitionToSubmitNew() {
-    this.props.router.push(`/idea/${this.props.selectedIdea.id}/new`);
-  }
-
-  transitionToSubmitEdit() {
-    this.props.router.push(`/idea/${this.props.selectedIdea.id}/edit`);
-  }
-
-  route() {
-    return this.props.routes[this.props.routes.length - 1].path;
-  }
-
-  renderSelection(selectedIdea, showType) {
+  renderSelection(selectedIdea) {
     const created = selectedIdea.created || Date.now();
     return (
       <div className="selection">
         <div className="details">
-          {showType ? <IdeaType value={selectedIdea.type} /> : null}
+          <IdeaType value={selectedIdea.type} />
           <div className="body">{selectedIdea.body}</div>
           <div className="created">{moment(created).fromNow()}</div>
         </div>
         <div className="options">
-          <Link to={`/idea/${selectedIdea.id}/new`} className="new-idea-button">＋</Link>
+          <a onClick={this.transitionToCreateForm} className="new-idea-button">＋</a>
           <MenuButton className="options-menu" positionOptions={{hAlign: 'right', position: 'bottom'}} 
             menu={this.renderOptionsMenu(selectedIdea)}>☰</MenuButton>
         </div>
       </div>);
   }
 
+  renderParents(selectedIdea) {
+    return (selectedIdea.parents || []).map(p => 
+      <div className="parents" key={p.id}>
+        <Link to={"/idea/" + p.id}>
+          <div className="body">{p.body}</div>
+        </Link>
+      </div>);
+  }
+
   renderSubmitNew() {
-    return <IdeaSubmit onSubmit={this.handleSubmitNew} onCancel={this.handleCancel} shouldSubmitType={true} />;
+    return <IdeaSubmit onSubmit={this.handleCreateSubmitted} onCancel={this.handleCancel} shouldSubmitType={true} />;
   }
 
-  renderEditor(selectedIdea, showType) {
-    return <IdeaSubmit onSubmit={this.handleSubmitEdit} onCancel={this.handleCancel} 
-      shouldSubmitType={showType} selectedIdea={selectedIdea} />;
+  renderEditor(selectedIdea) {
+    const submitType = selectedIdea.type !== ROOT_TYPE;
+    return <IdeaSubmit onSubmit={this.handleEditSubmitted} onCancel={this.handleCancel} 
+      shouldSubmitType={submitType} selectedIdea={selectedIdea} />;
   }
 
-  handleSubmitNew(newIdea) {
+  renderOptionsMenu(selectedIdea) {
+    return (
+      <Dropdown>
+        <MenuList>
+          <MenuItem><div onClick={this.transitionToEditForm} className="button secondary">Edit</div></MenuItem>
+          <MenuItem><div onClick={this.openDeleteConfirmModal} className="button alert">Delete</div></MenuItem>
+        </MenuList>
+      </Dropdown>
+    );
+  }
+
+  route() {
+    return this.props.routes[this.props.routes.length - 1].path;
+  }
+
+  transitionTo(url) {
+    this.props.actions.skipFetch();
+    this.props.router.replace(url);
+  }
+
+  transitionToCreateForm() {
+    this.transitionTo(`/idea/${this.props.selectedIdea.id}/new`);
+    return false;
+  }
+
+  transitionToEditForm() {
+    this.transitionTo(`/idea/${this.props.selectedIdea.id}/edit`);
+    return false;
+  }
+
+  handleCreateSubmitted(newIdea) {
     this.props.actions.createIdea(newIdea, this.props.selectedIdea.id, newIdea.type);
-    this.props.router.replace(`/idea/${this.props.selectedIdea.id}`);
+    this.transitionTo(`/idea/${this.props.selectedIdea.id}`);
   }
   
-  handleSubmitEdit(editedIdea) {
+  handleEditSubmitted(editedIdea) {
     this.props.actions.updateIdea(editedIdea);
-    this.props.router.replace(`/idea/${this.props.selectedIdea.id}`);
+    this.transitionTo(`/idea/${this.props.selectedIdea.id}`);
   }
 
   handleCancel(idea) {
-    this.props.router.replace(`/idea/${this.props.selectedIdea.id}`);
+    this.transitionTo(`/idea/${this.props.selectedIdea.id}`);
   }
 
   openDeleteConfirmModal() {
@@ -123,30 +152,13 @@ export default class SelectedIdea extends React.Component {
   }
 
   onDeleteConfirmed() {
+    const { actions, selectedIdea, router } = this.props;
     this.setState({ deleteModalIsOpen: false });
-    this.props.actions.deleteIdea(this.props.selectedIdea).then(() => {
-      this.props.router.replace(`/idea/${this.props.selectedIdea.parents[0].id}`)
+    actions.deleteIdea(selectedIdea).then(() => {
+      // do not call transitionTo; since we are transitioning to a different idea, we want a fetch to happen.
+      this.props.router.replace(selectedIdea.parents.length > 0 ? `/idea/${selectedIdea.parents[0].id}` : '/');
     });
   }
 
-  renderOptionsMenu(selectedIdea) {
-    return (
-      <Dropdown>
-        <MenuList>
-          <MenuItem><Link to={`/idea/${selectedIdea.id}/edit`} className="button secondary">Edit</Link></MenuItem>
-          <MenuItem><div onClick={this.openDeleteConfirmModal} className="button alert">Delete</div></MenuItem>
-        </MenuList>
-      </Dropdown>
-    );
-  }
-
-  renderParents(selectedIdea) {
-    return (selectedIdea.parents || []).map(p => 
-      <div className="parents" key={p.id}>
-        <Link to={"/idea/" + p.id}>
-          <div className="body">{p.body}</div>
-        </Link>
-      </div>);
-  }
 }
 

@@ -2,9 +2,15 @@ import { handleActions } from "redux-actions";
 
 export default handleActions({
 
-  RECORD_INITIAL_DATA_LOADED: (state, action) => {
+  SHOULD_FETCH: (state, action) => {
     return Object.assign({}, state, {
-      isInitialDataLoaded: true
+      shouldFetch: true
+    })
+  },
+
+  SKIP_FETCH: (state, action) => {
+    return Object.assign({}, state, {
+      shouldFetch: false
     })
   },
 

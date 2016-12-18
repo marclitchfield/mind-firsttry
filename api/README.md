@@ -47,24 +47,30 @@ Contains operations for how the node should be mutated. The following operations
 * **props**: properties to set on the node. Value is a map of properties.
 * **in**: links to create to this node. Value is a map of predicates and source node ids.
 * **out**: links to create from this node. Value is a map of predicates and target node ids.
-* **del**: outbound links to delete from this node. Value is a map of predicates and target node ids.
+* **del**: props, outbound links, and inbound links to delete from this node. 
 
 For example:
 
 ```javascript
 {
   "props": { "a": "A", "b": "B" },
-  "in": { "x": "xx", "y": "yy" },
-  "out": { "m": "mm", "n": "nn" },
-  "del": { "d": "dd", "e": "ee" }
+  "in": { "inbound": "source" },
+  "out": { "outbound": "target" },
+  "del": { 
+    "props": { "c": "C" }, 
+    "in": { "old_in": "source" }, 
+    "out": { "old_out": "target" } 
+  }
 }
 ```
-This example will do the following:
+This example will do the following for the given node:
 
-* Add or update ```a=A``` and ```b=B``` props to the node
-* Add outbound links: ```node-[x]->xx```, ```node-[y]->yy```
-* Add inbound links: ```mm-[m]->node```, ```nn-[n]->node```
-* Remove outbound links: ```node-[d]->dd```, ```node-[e]->ee```
+* Add or update ```a=A``` and ```b=B``` props to this node
+* Add ```inbound``` link from ```source``` to this node
+* Add ```outbound``` link from this node to ```target``` 
+* Delete the property ```c``` with the value ```C```
+* Delete ```old_in``` link from ```source``` to this node
+* Delete ```old_out``` link from this node to ```target```
 
 All operations are optional, and any combination can be provided.
 
@@ -179,10 +185,11 @@ query_graph $node1 '{ "body": true, "confidence": true,
 ```
 
 #### del operation
-To delete links between nodes, you can use either mutate function with a "del" operation. 
+To delete links between nodes, you can use either mutate function with a ```del``` operation. 
+The ```del``` operation accepts any combination of ```props```, ```in```, or ```out``` operations. 
 
 ```fish
-mutate_node $node2 '{ "del": { "parent": "'$node1'" } }'
+mutate_node $node2 '{ "del": { "out": { "parent": "'$node1'" } } }'
 query_graph $node2 '{ "body": true, "parent": { "body": true } }'
 ```
 ```
