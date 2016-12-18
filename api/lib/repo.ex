@@ -4,7 +4,7 @@ defmodule MindRepo do
 
   def query_graph(id, query) do
     case Dgraph.query(id, query) do
-      {:ok, response} -> {:ok, response["node"] |> Enum.at(0)}
+      {:ok, response} -> {:ok, hd(response["node"])}
       error -> error
     end
   end
