@@ -18,7 +18,7 @@ npm run server-watch
 
 Before the facet can be used, it must be initialized. POST to the ```/api/init``` endpoint:
 ```
-curl -v -XPOST http://localhost:9010/api/init
+curl --fail --show-error --silent -XPOST http://localhost:9010/api/init
 ```
 
 The server should now be available at ```http://localhost:9010```. 
