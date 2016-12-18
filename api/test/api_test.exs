@@ -18,14 +18,14 @@ defmodule ApiTest do
     target = post_node()
     source = post_node(out: [to: target])
     response = query_graph(source, [to: %{}])
-    assert Enum.at(response.to, 0).id == target
+    assert hd(response.to).id == target
   end
 
   test "post node with link from other node" do
     source = post_node()
     target = post_node(in: [to: source])
     response = query_graph(source, [to: %{}])
-    assert Enum.at(response.to, 0).id == target
+    assert hd(response.to).id == target
   end
 
   test "update and insert properties for existing node" do
@@ -40,8 +40,8 @@ defmodule ApiTest do
     source = post_node()
     target = post_node(in: [to: source], out: [from: source])
     response = query_graph(source, [to: [from: %{}]])
-    assert Enum.at(response.to, 0).id == target
-    assert (Enum.at(response.to, 0).from |> Enum.at(0)).id == source
+    assert hd(response.to).id == target
+    assert hd(hd(response.to).from).id == source
   end
 
   test "insert links between existing nodes" do
@@ -49,25 +49,32 @@ defmodule ApiTest do
     target = post_node()
     post_graph(%{ source => [out: [to: target]], target => [out: [from: source]] })
     response = query_graph(source, [to: [from: %{}]])
-    assert Enum.at(response.to, 0).id == target
-    assert (Enum.at(response.to, 0).from |> Enum.at(0)).id == source
+    assert hd(response.to).id == target
+    assert hd(hd(response.to).from).id == source
   end
 
   test "delete existing node links" do
     target = post_node()
-    source = post_node([out: [to: target]])
-    post_graph(%{ source => [del: [to: target]] })
-    response = query_graph(source, [to: %{}])
+    source = post_node(out: [to: target], in: [from: target])
+    post_graph(%{ source => [del: [out: [to: target], in: [from: target]]] })
+    response = query_graph(source, [to: [from: %{}]])
     assert Map.has_key?(response, :to) == false
+  end
+
+  test "delete existing node properties" do
+    id = post_node(props: [delete_me: "value"])
+    post_node(id, del: [props: [delete_me: "value"]])
+    response = query_graph(id, [delete_me: true])
+    assert Map.has_key?(response, :delete_me) == false
   end
 
   test "update link between existing nodes" do
     source = post_node()
     target1 = post_node(in: [to: source])
     target2 = post_node()
-    post_graph(%{ source => [out: [to: target2], del: [to: target1]] })
+    post_graph(%{ source => [out: [to: target2], del: [out: [to: target1]]] })
     response = query_graph(source, [to: %{}])
-    assert Enum.at(response.to, 0).id == target2
+    assert hd(response.to).id == target2
   end
 
   test "post and query with special characters in body" do

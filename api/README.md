@@ -42,23 +42,41 @@ The API exposes the following endpoints
 ### Payload formats
 
 #### ```node_mutation```
-Contains operations for how the node should be mutated. Any combination of operations can be provided.
+Contains operations for how the node should be mutated. The following operations are supported:
 
-```javascript
-{
-  "props": {},
-  "in": {},
-  "out": {},
-  "del": {}
-}
-```
 * **props**: properties to set on the node. Value is a map of properties.
 * **in**: links to create to this node. Value is a map of predicates and source node ids.
 * **out**: links to create from this node. Value is a map of predicates and target node ids.
-* **del**: outbound links to delete from this node. Value is a map of predicates and target node ids.
+* **del**: props, outbound links, and inbound links to delete from this node. 
+
+For example:
+
+```javascript
+{
+  "props": { "a": "A", "b": "B" },
+  "in": { "inbound": "source" },
+  "out": { "outbound": "target" },
+  "del": { 
+    "props": { "c": "C" }, 
+    "in": { "old_in": "source" }, 
+    "out": { "old_out": "target" } 
+  }
+}
+```
+This example will do the following for the given node:
+
+* Add or update ```a=A``` and ```b=B``` props to this node
+* Add ```inbound``` link from ```source``` to this node
+* Add ```outbound``` link from this node to ```target``` 
+* Delete the property ```c``` with the value ```C```
+* Delete ```old_in``` link from ```source``` to this node
+* Delete ```old_out``` link from this node to ```target```
+
+All operations are optional, and any combination can be provided.
 
 #### ```graph_mutation``` 
-Contains a map of node ids and corresponding ```node_mutation``` operations.
+
+Contains a map of node ids and corresponding ```node_mutation``` operations to be applied.
 
 ```javascript
 {
@@ -67,21 +85,32 @@ Contains a map of node ids and corresponding ```node_mutation``` operations.
 }
 ```
 
-#### ```query_mutation``` 
-Specifies the data that should be returned from the graph.
+#### ```query``` 
+Specifies the data that should be returned from the graph. The query is a map with two types of values:
+
+* When the value is true, a property selected for the given key.
+* When the value is a map, a link is selected for the given key. Nested properties and links can be retrieved.
+
+For example:
 
 ```javascript
 {
   "prop1": true,
   "prop2": true,
-  "link1": {
-    "prop3": true
+  "child": {
+    "prop3": true,
+    "child": {
+      "prop4": true
+    }
   }
 }
 ```
 
-* When the value is true, a property selected for the given key.
-* When the value is a map, a link is selected for the given key. Nested properties and links can be retrieved.
+This will retrieve the following:
+* The ```prop1``` and ```prop2``` properties for the node.
+* Nodes related by the ```child``` predicate, along with the ```prop3``` property.
+* Nodes related to the children by the ```child``` predicate (the grandchildren), along with the ```prop4``` property.
+* Built-in properties like ```id``` and ```created``` for each node
 
 
 ## Usage
@@ -156,10 +185,11 @@ query_graph $node1 '{ "body": true, "confidence": true,
 ```
 
 #### del operation
-To delete links between nodes, you can use either mutate function with a "del" operation. 
+To delete links between nodes, you can use either mutate function with a ```del``` operation. 
+The ```del``` operation accepts any combination of ```props```, ```in```, or ```out``` operations. 
 
 ```fish
-mutate_node $node2 '{ "del": { "parent": "'$node1'" } }'
+mutate_node $node2 '{ "del": { "out": { "parent": "'$node1'" } } }'
 query_graph $node2 '{ "body": true, "parent": { "body": true } }'
 ```
 ```

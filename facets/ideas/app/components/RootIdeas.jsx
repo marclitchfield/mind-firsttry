@@ -9,14 +9,14 @@ export default class RootIdeas extends React.Component {
   }
 
   handleSubmit(idea) {
-    this.props.actions.submitRootIdea(idea);
+    this.props.actions.createRootIdea(idea);
   }
 
   render() {
     return (
       <div className="root-ideas">
-        <IdeaList hideType={true} ideas={this.props.rootIdeas} />
-        <IdeaSubmit onSubmit={this.handleSubmit} shouldSubmitType={false} hideCancel={true} noFocus={true} />
+        <IdeaList ideas={this.props.rootIdeas} />
+        <IdeaSubmit onSubmit={this.handleSubmit} hideCancel={true} noFocus={true} />
       </div>
     );
   }

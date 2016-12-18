@@ -10,3 +10,4 @@ export const SUPPORTED_TYPES = [
   "comment",
 ];
 
+export const ROOT_TYPE = "idea";

@@ -22,6 +22,7 @@
     "lodash": "^4.17.2",
     "moment": "^2.17.0",
     "morgan": "^1.3.2",
+    "mousetrap": "^1.6.0",
     "react": "^15.1.0",
     "react-dom": "^15.1.0",
     "react-menu-list": "^3.2.2",
