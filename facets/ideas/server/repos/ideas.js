@@ -58,6 +58,14 @@ class IdeasRepo {
       .catch(err => undefined);
   }
 
+  deleteIdea(idea) {
+    const payload = {
+      del: { [CHILD_PREDICATE]: idea.id }
+    };
+
+    return axios.post(join(config.api_url, `node/${idea.parent.id}`), payload);
+  }
+
   init() {
     const payload = SUPPORTED_TYPES.reduce((map, type) =>
       Object.assign({}, map, {

@@ -124,6 +124,9 @@ export default class SelectedIdea extends React.Component {
 
   onDeleteConfirmed() {
     this.setState({ deleteModalIsOpen: false });
+    this.props.actions.deleteIdea(this.props.selectedIdea).then(() => {
+      this.props.router.replace(`/idea/${this.props.selectedIdea.parents[0].id}`)
+    });
   }
 
   renderOptionsMenu(selectedIdea) {

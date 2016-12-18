@@ -42,16 +42,6 @@ defmodule Dgraph do
     end
   end
 
-  defp mutation_body(ops) do
-    combined_ops = Enum.reduce(ops, [set: [], del: []], 
-      fn {op, quads}, acc -> Keyword.put(acc, op, acc[op] ++ quads) end)
-    combined_ops |> Enum.map(fn {op, quads} -> op_body(op, quads) end) |> Enum.join(" ")
-  end
-
-  defp op_body(_, []), do: ""
-  defp op_body(:set, quads), do: "set { " <> build_quad_body(quads) <> " }"
-  defp op_body(:del, quads), do: "delete { " <> build_quad_body(quads) <> " }"
-
   defp validate(ops) do
     quads = for {_, quads} <- ops, quad <- quads, do: quad
     cond do
@@ -63,6 +53,15 @@ defmodule Dgraph do
 
   def invalid_chars?(atom) when is_atom(atom), do: false
   def invalid_chars?(string), do: !Regex.match?(@valid_id_regex, string)
+
+  defp mutation_body(ops) do
+    Enum.reduce(ops, [set: [], del: []], fn {op, quads}, acc -> Keyword.put(acc, op, acc[op] ++ quads) end)
+      |> Enum.map(fn {op, quads} -> op_body(op, quads) end) |> Enum.join(" ")
+  end
+
+  defp op_body(_, []), do: ""
+  defp op_body(:set, quads), do: "set { " <> build_quad_body(quads) <> " }"
+  defp op_body(:del, ops), do: "delete { " <> build_quad_body(ops) <> " }"
 
   defp build_quad_body(quads) do
     (quads |> Enum.map(fn q -> quad_string(q) end) |> Enum.join(" .\n")) <> " ."

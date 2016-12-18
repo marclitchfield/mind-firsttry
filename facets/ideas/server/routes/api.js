@@ -19,6 +19,10 @@ router.put("/ideas/:id", (req, res) => {
   res.json(ideasRepo.updateIdea(req.body));
 });
 
+router.post("/ideas?delete", (req, res) => {
+  res.json(ideasRepo.deleteIdea(req.body));
+});
+
 router.post("/init", (req, res) => {
   res.json(ideasRepo.init());
 })

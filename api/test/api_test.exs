@@ -55,17 +55,24 @@ defmodule ApiTest do
 
   test "delete existing node links" do
     target = post_node()
-    source = post_node([out: [to: target]])
-    post_graph(%{ source => [del: [to: target]] })
-    response = query_graph(source, [to: %{}])
+    source = post_node(out: [to: target], in: [from: target])
+    post_graph(%{ source => [del: [out: [to: target], in: [from: target]]] })
+    response = query_graph(source, [to: [from: %{}]])
     assert Map.has_key?(response, :to) == false
+  end
+
+  test "delete existing node properties" do
+    id = post_node(props: [delete_me: "value"])
+    post_node(id, del: [props: [delete_me: "value"]])
+    response = query_graph(id, [delete_me: true])
+    assert Map.has_key?(response, :delete_me) == false
   end
 
   test "update link between existing nodes" do
     source = post_node()
     target1 = post_node(in: [to: source])
     target2 = post_node()
-    post_graph(%{ source => [out: [to: target2], del: [to: target1]] })
+    post_graph(%{ source => [out: [to: target2], del: [out: [to: target1]]] })
     response = query_graph(source, [to: %{}])
     assert Enum.at(response.to, 0).id == target2
   end

@@ -28,15 +28,24 @@ defmodule MindRepo do
   end
 
   def to_ops(mutations, id) do
-    mutation_kw = Enum.map(mutations, fn({key, value}) -> {String.to_atom(key), value} end)
-    defaults = [props: [], in: [], out: [], del: []]
-    m = Keyword.merge(defaults, mutation_kw) |> Enum.into(%{})
-    prop_quads = m.props |> Enum.map(fn {p, o} -> Dgraph.quad(id, p, [value: o]) end)
-    in_quads = m.in |> Enum.map(fn {p, s} -> Dgraph.quad(s, p, [node: id]) end)
-    out_quads = m.out |> Enum.map(fn {p, o} -> Dgraph.quad(id, p, [node: o]) end)
-    del_quads = m.del |> Enum.map(fn {p, o} -> Dgraph.quad(id, p, [node: o]) end)
-    [set: prop_quads ++ in_quads ++ out_quads, del: del_quads]
+    m = mutation_keywords(mutations)
+    set_quads = prop_quads(m.props, id) ++ in_quads(m.in, id) ++ out_quads(m.out, id)
+
+    dm = mutation_keywords(m.del)
+    del_quads = prop_quads(dm.props, id) ++ in_quads(dm.in, id) ++ out_quads(dm.out, id)
+
+    [set: set_quads, del: del_quads]
   end
+
+  defp mutation_keywords(mutations) do
+    defaults = [props: [], in: [], out: [], del: []]
+    mutation_kw = Enum.map(mutations, fn({key, value}) -> {String.to_atom(key), value} end)
+    Keyword.merge(defaults, mutation_kw) |> Enum.into(%{})
+  end
+
+  defp prop_quads(props, id), do: props |> Enum.map(fn {p, o} -> Dgraph.quad(id, p, [value: o]) end)
+  defp in_quads(ins, id), do: ins |> Enum.map(fn {p, s} -> Dgraph.quad(s, p, [node: id]) end)
+  defp out_quads(outs, id), do: outs |> Enum.map(fn {p, o} -> Dgraph.quad(id, p, [node: o]) end)
 
   defp new_node_ops(id) do
     id_quad = Dgraph.quad(id, @id_pred, [value: id])
