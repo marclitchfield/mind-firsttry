@@ -26,3 +26,13 @@ To follow all logs, run ```docker-compose logs -f```
 Note that the logs will show the internal ports within the container.
 
 To access services from the host, use the external ports defined in the table above.
+
+## Initialization
+
+Before the ideas facet can be used, it must be initialized. Eventually this will be an automatic operation. For now, POST to the /api/init endpoint:
+
+```
+curl --fail --show-error --silent -XPOST http://localhost:5010/api/init
+```
+
+The facet should now be available on port ```5010```
