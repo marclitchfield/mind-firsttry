@@ -109,21 +109,27 @@ class IdeasRepo {
 
 function queryProperties({ children, parents }) {
   const node = { 
-    [P.BODY]: true,
-    [P.CREATED]: true,
-    [P.IS]: {}
+    [P.IS]: {},
+    [P.CREATED]: true
   };
+  const body = {
+    [P.BODY]: true
+  };
+  const nodeChildren = { 
+    [P.CHILD]: children ? Object.assign({}, node, body, { [P.CHILD]: node }) : node
+  };
+  const nodeParents = parents ? {
+    [P.PARENT]: Object.assign({}, node, body)
+  } : {};
 
-  return Object.assign({}, node, 
-    parents ? { [P.PARENT]: node } : {},
-    children ? { [P.CHILD]: node } : {});
+  return Object.assign({}, node, body, nodeChildren, nodeParents);
 }
 
 function toIdea(ideaResponse) {
   return {
     id: ideaResponse.id,
     body: ideaResponse[P.BODY],
-    type: ideaResponse[P.IS][0].id,
+    type: ideaResponse[P.IS] !== undefined ? ideaResponse[P.IS][0].id : ROOT_TYPE,
     created: ideaResponse[P.CREATED],
     children: (ideaResponse[P.CHILD] || []).map(i => toIdea(i)),
     parents: (ideaResponse[P.PARENT] || []).map(i => toIdea(i))

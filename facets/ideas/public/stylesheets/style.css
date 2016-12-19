@@ -36,7 +36,7 @@ a, a:hover, a:focus, a:active {
 .idea {
   background-color: #457373;
   color: white;
-  padding: 6px;
+  padding: 8px 6px;
   margin-bottom: 6px;
 }
 
@@ -55,7 +55,7 @@ a, a:hover, a:focus, a:active {
 
 .idea .created {
   color: lightcyan;
-  margin-top: .2em;
+  margin-top: 4px;
   font-size: .6em;
 }
 
@@ -158,6 +158,20 @@ div[role=menu] .button {
   width: 4px;
   border: 1px solid #555;
   height: 38px;
+}
+
+.child-indicators {
+  margin-top: 4px;
+  height: 6px;
+}
+
+.child-indicators .idea-type {
+  font-size: 0;
+  height: 8px;
+  margin-right: 0;
+  width: 8px;
+  line-height: .5em;
+  border: 1px solid darkslategray;
 }
 
 .idea .body {
