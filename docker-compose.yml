@@ -12,6 +12,7 @@ services:
     - MIND_DGRAPH_URL=http://mind-db:8080
     links:
     - mind-db
+    - mind-search
   mind-facet.ideas:
     container_name: mind-facet.ideas
     image: mind-facet.ideas
@@ -22,6 +23,13 @@ services:
     - MIND_API_URL=http://mind-api:9000
     links:
     - mind-api
+  mind-search:
+    container_name: mind-search
+    image: kiasaki/alpine-elasticsearch 
+    ports:
+    - "9200:9200"
+    environment:
+    - MIND_SEARCH_URL=http://mind-search:9200
   mind-db:
     container_name: mind-db
     image: mind-db
