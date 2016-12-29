@@ -161,8 +161,8 @@ div[role=menu] .button {
 }
 
 .child-indicators {
-  margin-top: 4px;
-  height: 6px;
+  margin-top: 8px;
+  line-height: 8px;
 }
 
 .child-indicators .idea-type {
