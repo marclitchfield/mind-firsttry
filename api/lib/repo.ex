@@ -1,6 +1,6 @@
 defmodule MindRepo do
   @id_pred "id"
-  @created_pred "created.at"
+  @created_pred "created"
 
   def query_graph(id, query) do
     case Dgraph.query(id, query) do
@@ -15,17 +15,17 @@ defmodule MindRepo do
 
   def new_node(options) do
     id = UUID.uuid4()
-    keywords = option_keywords(options)
-    ops = new_node_ops(id) ++ to_ops(keywords, id)
-    with {:ok, _} <- Dgraph.mutate(ops),
-      {:ok, _} <- save_document(id, keywords.document),
+    opt = option_keywords(options)
+    keywords = Map.put(opt, :props, Map.merge(opt[:props], new_node_props(id)))
+    with {:ok, _} <- Dgraph.mutate(to_ops(keywords, id)),
+      {:ok, _} <- save_document(id, keywords),
     do: {:ok, id}
   end
 
   def mutate_node(id, options) do
     keywords = option_keywords(options)
     with {:ok, response} <- Dgraph.mutate(to_ops(keywords, id)),
-      {:ok, _} <- save_document(id, keywords.document),
+      {:ok, _} <- save_document(id, keywords),
     do: {:ok, response}
   end
 
@@ -37,13 +37,18 @@ defmodule MindRepo do
     do: {:ok, response}
   end
 
-  defp save_document(id, map) when is_map(map), do: save_document(id, hd(Enum.into(map, [])))
-  defp save_document(id, {facet, document}), do: ElasticSearch.index(facet, id, document)
-  defp save_document(id, []), do: {:ok, :nop}
+  defp save_document(_id, []), do: {:ok, :nop}
+  defp save_document(id, keywords), do: save_document(id, keywords.document, keywords.props)
+
+  defp save_document(_id, map, _) when map == %{}, do: {:ok, :nop}
+  defp save_document(id, document, props) do
+    {facet, source} = hd(Enum.into(document, []))
+    ElasticSearch.index(facet, id, Map.merge(source, props))
+  end
 
   defp save_documents(keywords_map) do
     keywords_map
-      |> Enum.map(fn {id, keywords} -> Task.async(fn -> save_document(id, keywords.document) end) end)
+      |> Enum.map(fn {id, keywords} -> Task.async(fn -> save_document(id, keywords) end) end)
       |> Enum.map(&Task.await(&1))
       |> Enum.find({:ok, :success}, fn result -> elem(result, 0) == :error end)
   end
@@ -60,7 +65,7 @@ defmodule MindRepo do
   end
 
   defp option_keywords(options) do
-    defaults = [props: [], in: [], out: [], del: [], document: []]
+    defaults = [props: %{}, in: %{}, out: %{}, del: %{}, document: %{}]
     option_kw = Enum.map(options, fn({key, value}) -> {String.to_atom(key), value} end)
     Keyword.merge(defaults, option_kw) |> Enum.into(%{})
   end
@@ -69,10 +74,8 @@ defmodule MindRepo do
   defp in_quads(ins, id), do: ins |> Enum.map(fn {p, s} -> Dgraph.quad(s, p, [node: id]) end)
   defp out_quads(outs, id), do: outs |> Enum.map(fn {p, o} -> Dgraph.quad(id, p, [node: o]) end)
 
-  defp new_node_ops(id) do
-    id_quad = Dgraph.quad(id, @id_pred, [value: id])
-    created_quad = Dgraph.quad(id, @created_pred, [value: (DateTime.utc_now |> DateTime.to_string) ])
-    [set: [id_quad, created_quad]]
+  defp new_node_props(id) do
+    %{@id_pred => id, @created_pred => (DateTime.utc_now |> DateTime.to_string)}
   end
 
 end

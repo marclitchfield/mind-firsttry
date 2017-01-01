@@ -9,9 +9,9 @@ defmodule ApiTest do
 
   test "post node with properties" do
     id = post_node(props: [prop: "value"])
-    response = query_graph(id, [prop: true, "created.at": true])
+    response = query_graph(id, [prop: true, created: true])
     assert response.id != nil
-    assert response[:"created.at"] != nil
+    assert response.created != nil
     assert response.prop == "value"
   end
 
@@ -90,12 +90,43 @@ defmodule ApiTest do
     assert resp.status == 400
   end
 
-  @tag :wip
-  test "index document" do
-    value = UUID.uuid4() |> String.replace("-", "")
-    post_node(document: %{@test_facet => [body: value]})
-    response = search_graph(@test_facet, [body: value])
-    assert hd(response).body == value
+  test "index document with props" do
+    value = unique_text()
+    id = post_node(props: [body: value], document: %{@test_facet => %{}})
+    hit = hd(search_graph(@test_facet, [body: value]))
+    assert hit.id == id
+    assert hit.created != nil
+    assert hit.body == value
+  end
+
+  test "index document fields" do
+    value = unique_text()
+    id = post_node(document: %{@test_facet => [field: value]})
+    hit = hd(search_graph(@test_facet, [field: value]))
+    assert hit.id == id
+    assert hit.created != nil
+    assert hit.field == value
+  end
+
+  test "update document" do
+    prop1_value = unique_text()
+    prop2_value = unique_text()
+    id = post_node(props: [prop1: prop1_value], document: %{@test_facet => %{}})
+    post_node(id, props: [prop2: prop2_value], document: %{@test_facet => %{}})
+    hit = hd(search_graph(@test_facet, [prop2: prop2_value]))
+    assert hit.id == id
+    assert hit.prop1 == prop1_value
+    assert hit.prop2 == prop2_value
+  end
+
+  test "index document with mutation" do
+    value = unique_text()
+    id = post_node(document: %{@test_facet => %{}})
+    post_graph(%{ id => [document: %{@test_facet => [field: value]}] })
+    hit = hd(search_graph(@test_facet, [field: value]))
+    assert hit.id == id
+    assert hit.field == value
+    assert hit.created != nil
   end
 
   defp post_node(opts \\ []) do
@@ -116,11 +147,14 @@ defmodule ApiTest do
 
   defp search_graph(facet, query, attempts \\ 10) do
     results = call_post_assert("/search/#{facet}", query) |> to_json
-    if length(results) == 0 do
-      :timer.sleep(200)
-      search_graph(facet, query, attempts - 1)
-    else
-      results
+    cond do
+      attempts <= 0 -> 
+        flunk "timeout waiting for #{inspect query}"
+      length(results) > 0 ->
+        results
+      true ->
+        :timer.sleep(200)
+        search_graph(facet, query, attempts - 1)
     end
   end
 
@@ -138,6 +172,10 @@ defmodule ApiTest do
 
   defp to_json(body) do
     body |> Poison.decode!(keys: :atoms)
+  end
+
+  defp unique_text() do
+    UUID.uuid4() |> String.replace("-", "")
   end
   
 end

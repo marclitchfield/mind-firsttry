@@ -1,26 +1,41 @@
 defmodule ElasticSearch do
+  use HTTPoison.Base
+
+  def process_url(url) do
+    Application.get_env(:api, :elastic_url) <> url
+  end
+
+  def process_request_body(body), do: body |> Poison.encode!
+
+  def process_response_body(body) do
+    IO.inspect {:elasticsearch_response, body |> Poison.decode!}
+    body |> Poison.decode! 
+  end
 
   def index(facet, id, source) do
-    url = Application.get_env(:api, :elastic_url)
     index = Application.get_env(:api, :elastic_index)
-    IO.inspect {:elasticsearch_index_request, facet, source}
+    url = "/#{index}/#{facet}/#{id}/_update"
+    request = %{"doc" => source, "doc_as_upsert" => true}
+    IO.inspect {:elasticsearch_request, url, request}
 
-    case Elastix.Document.index(url, index, facet, id, source) do
-      %HTTPoison.Response{body: %{"error" => err}} -> {:error, err}
-      response -> {:ok, response}
+    case post(url, request) do
+      {:ok, %HTTPoison.Response{body: %{"error" => err}}} -> {:error, err}
+      response -> response
     end
   end
 
   def search(facet, query) do
-    url = Application.get_env(:api, :elastic_url)
     index = Application.get_env(:api, :elastic_index)
+    url = "/#{index}/#{facet}/_search"
     request = %{ query: %{ prefix: query } }
-    IO.inspect {:elasticsearch_search_request, request}
+    IO.inspect {:elasticsearch_request, url, request}
 
-    case Elastix.Search.search(url, index, [facet], request) do
-      %HTTPoison.Response{body: %{"error" => err}} -> {:error, err}
-      %HTTPoison.Response{body: %{"hits" => %{"hits" => hits}}} -> {:ok, Enum.map(hits, fn hit -> hit["_source"] end)}
+    case post(url, request) do
+      {:ok, %HTTPoison.Response{body: %{"error" => err}}} -> {:error, err}
+      {:ok, %HTTPoison.Response{body: %{"hits" => %{"hits" => hits}}}} -> {:ok, Enum.map(hits, &build_hit(&1))}
     end
   end
+
+  defp build_hit(hit), do: Map.merge(%{id: hit["_id"]}, hit["_source"])
 
 end

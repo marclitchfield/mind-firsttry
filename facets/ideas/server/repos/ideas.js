@@ -14,12 +14,6 @@ const P = {
 
 const ROOT_SUBJECT = "ideas.facet";
 
-const PROJECTION = {
-  body: { props: P.BODY },
-  created: { props: P.CREATED },
-  type: { out: P.IS }
-}
-
 class IdeasRepo {
 
   getIdeas() {
@@ -47,8 +41,10 @@ class IdeasRepo {
       props: { [P.BODY]: idea.body },
       out: { [P.PARENT]: subject, [P.IS]: ideaType },
       in: { [P.CHILD]: subject },
-      projection: {
-        [ROOT_SUBJECT]: PROJECTION
+      document: {
+        body: idea.body,
+        type: ideaType,
+        children: []
       }
     };
 
