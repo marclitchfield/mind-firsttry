@@ -5,6 +5,7 @@ defmodule ApiTest do
   doctest Api
   @opts Router.init([])
   @special_chars ~s(sq:' dq:" bs:\\ # lb:} rb:{ amp:&)
+  @test_facet "test.facet"
 
   test "post node with properties" do
     id = post_node(props: [prop: "value"])
@@ -89,6 +90,14 @@ defmodule ApiTest do
     assert resp.status == 400
   end
 
+  @tag :wip
+  test "index document" do
+    value = UUID.uuid4() |> String.replace("-", "")
+    post_node(document: %{@test_facet => [body: value]})
+    response = search_graph(@test_facet, [body: value])
+    assert hd(response).body == value
+  end
+
   defp post_node(opts \\ []) do
     call_post_assert("/node", opts)
   end
@@ -105,9 +114,19 @@ defmodule ApiTest do
     call_post_assert("/query/#{id}", query) |> to_json
   end
 
+  defp search_graph(facet, query, attempts \\ 10) do
+    results = call_post_assert("/search/#{facet}", query) |> to_json
+    if length(results) == 0 do
+      :timer.sleep(200)
+      search_graph(facet, query, attempts - 1)
+    else
+      results
+    end
+  end
+
   defp call_post_assert(url, payload) do
     response = call_post(url, payload)
-    assert response.status == 200
+    assert response.status == 200, response.resp_body
     response.resp_body
   end
 

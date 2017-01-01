@@ -9,38 +9,60 @@ defmodule MindRepo do
     end
   end
 
-  def new_node(mutations) do
+  def search_graph(facet, query) do
+    ElasticSearch.search(facet, query)
+  end
+
+  def new_node(options) do
     id = UUID.uuid4()
-    ops = new_node_ops(id) ++ (mutations |> to_ops(id))
-    case Dgraph.mutate(ops) do
-      {:ok, _} -> {:ok, id}
-      error -> error
-    end
+    keywords = option_keywords(options)
+    ops = new_node_ops(id) ++ to_ops(keywords, id)
+    with {:ok, _} <- Dgraph.mutate(ops),
+      {:ok, _} <- save_document(id, keywords.document),
+    do: {:ok, id}
   end
 
-  def mutate_node(id, mutations) do
-    Dgraph.mutate(mutations |> to_ops(id))
+  def mutate_node(id, options) do
+    keywords = option_keywords(options)
+    with {:ok, response} <- Dgraph.mutate(to_ops(keywords, id)),
+      {:ok, _} <- save_document(id, keywords.document),
+    do: {:ok, response}
   end
 
-  def mutate_graph(mutations_map) do
-    quads = Enum.reduce(mutations_map, [], fn ({id, m}, acc) -> acc ++ (m |> to_ops(id)) end)
-    Dgraph.mutate(quads)
+  def mutate_graph(options_map) do
+    keywords_map = for {id, options} <- options_map, into: %{}, do: {id, option_keywords(options)}
+    quads = Enum.reduce(keywords_map, [], fn ({id, kw}, acc) -> acc ++ to_ops(kw, id) end)
+    with {:ok, response} <- Dgraph.mutate(quads),
+      {:ok, _} <- save_documents(keywords_map),
+    do: {:ok, response}
   end
 
-  def to_ops(mutations, id) do
-    m = mutation_keywords(mutations)
-    set_quads = prop_quads(m.props, id) ++ in_quads(m.in, id) ++ out_quads(m.out, id)
+  defp save_document(id, map) when is_map(map), do: save_document(id, hd(Enum.into(map, [])))
+  defp save_document(id, {facet, document}), do: ElasticSearch.index(facet, id, document)
+  defp save_document(id, []), do: {:ok, :nop}
 
-    dm = mutation_keywords(m.del)
-    del_quads = prop_quads(dm.props, id) ++ in_quads(dm.in, id) ++ out_quads(dm.out, id)
+  defp save_documents(keywords_map) do
+    keywords_map
+      |> Enum.map(fn {id, keywords} -> Task.async(fn -> save_document(id, keywords.document) end) end)
+      |> Enum.map(&Task.await(&1))
+      |> Enum.find({:ok, :success}, fn result -> elem(result, 0) == :error end)
+  end
+
+  defp to_ops(keywords, id) do
+    set_quads = prop_quads(keywords.props, id) ++ in_quads(keywords.in, id) ++ out_quads(keywords.out, id)
+
+    deletion_keywords = option_keywords(keywords.del)
+    del_quads = prop_quads(deletion_keywords.props, id) 
+      ++ in_quads(deletion_keywords.in, id) 
+      ++ out_quads(deletion_keywords.out, id)
 
     [set: set_quads, del: del_quads]
   end
 
-  defp mutation_keywords(mutations) do
-    defaults = [props: [], in: [], out: [], del: []]
-    mutation_kw = Enum.map(mutations, fn({key, value}) -> {String.to_atom(key), value} end)
-    Keyword.merge(defaults, mutation_kw) |> Enum.into(%{})
+  defp option_keywords(options) do
+    defaults = [props: [], in: [], out: [], del: [], document: []]
+    option_kw = Enum.map(options, fn({key, value}) -> {String.to_atom(key), value} end)
+    Keyword.merge(defaults, option_kw) |> Enum.into(%{})
   end
 
   defp prop_quads(props, id), do: props |> Enum.map(fn {p, o} -> Dgraph.quad(id, p, [value: o]) end)

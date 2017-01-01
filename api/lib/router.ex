@@ -23,6 +23,10 @@ defmodule MindRouter do
     respond(conn, MindRepo.mutate_graph(conn.params))
   end
 
+  post "/search/:facet" do
+    respond(conn, MindRepo.search_graph(facet, conn.params))
+  end
+
   match _ do
     send_resp(conn, 404, "not found")
   end

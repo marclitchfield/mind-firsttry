@@ -14,6 +14,12 @@ const P = {
 
 const ROOT_SUBJECT = "ideas.facet";
 
+const PROJECTION = {
+  body: { props: P.BODY },
+  created: { props: P.CREATED },
+  type: { out: P.IS }
+}
+
 class IdeasRepo {
 
   getIdeas() {
@@ -40,7 +46,10 @@ class IdeasRepo {
     const payload = {
       props: { [P.BODY]: idea.body },
       out: { [P.PARENT]: subject, [P.IS]: ideaType },
-      in: { [P.CHILD]: subject }
+      in: { [P.CHILD]: subject },
+      projection: {
+        [ROOT_SUBJECT]: PROJECTION
+      }
     };
 
     return axios
@@ -54,12 +63,26 @@ class IdeasRepo {
     const payload = {
       props: { [P.BODY]: idea.body },
       out: idea._previous_type === idea.type ? {} : { [P.IS]: idea.type },
-      del: idea._previous_type === idea.type ? {} : { out: { [P.IS]: idea._previous_type } }
+      del: idea._previous_type === idea.type ? {} : { out: { [P.IS]: idea._previous_type } },
+      projection: {
+        [ROOT_SUBJECT]: Object.assign({}, PROJECTION, {
+          children: this.childrenProjection(idea)
+        })
+      }
     };
-
     return axios
       .post(join(config.api_url, `node/${idea.id}`), payload)
       .then(response => { return idea });
+  }
+
+  childrenProjection(idea) {
+    return idea.children.map(c => {
+        return {
+          id: c.id,
+          type: c.type,
+          created: c.created
+        }
+      });
   }
 
   deleteIdea(idea) {
@@ -82,6 +105,9 @@ class IdeasRepo {
         props: props,
         out: outbound,
         in: inbound 
+      },
+      projection: {
+        [ROOT_SUBJECT]: {}
       }
     };
 
@@ -123,6 +149,10 @@ function queryProperties({ children, parents }) {
   } : {};
 
   return Object.assign({}, node, body, nodeChildren, nodeParents);
+}
+
+function buildProjection(idea) {
+  
 }
 
 function toIdea(ideaResponse) {

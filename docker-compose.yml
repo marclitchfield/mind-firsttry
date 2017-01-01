@@ -27,7 +27,7 @@ services:
     container_name: mind-search
     image: kiasaki/alpine-elasticsearch 
     ports:
-    - "9200:9200"
+    - "5007:9200"
     environment:
     - MIND_SEARCH_URL=http://mind-search:9200
   mind-db:

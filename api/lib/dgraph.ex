@@ -20,7 +20,7 @@ defmodule Dgraph do
 
   def process_response_body(body) do
     IO.inspect {:dgraph_response, body |> Poison.decode!}
-    body |> Poison.decode!
+    body |> Poison.decode! 
   end
 
   def quad(subject, predicate, object) do

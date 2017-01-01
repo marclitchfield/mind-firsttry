@@ -12,6 +12,9 @@ defmodule Api do
     opts = [strategy: :one_for_one, name: Api.Supervisor]
     response = Supervisor.start_link(children, opts)
 
+    elastic_url = Application.get_env(:api, :elastic_url)
+    Elastix.Index.create(elastic_url, "mind", %{})
+
     IO.puts("mind-api listening on port #{port}")
     response
   end
