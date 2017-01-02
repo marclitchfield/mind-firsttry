@@ -93,7 +93,7 @@ defmodule ApiTest do
   test "index document with props" do
     value = unique_text()
     id = post_node(props: [body: value], document: %{@test_facet => %{}})
-    hit = hd(search_graph(@test_facet, ["body"], value))
+    hit = hd(search_graph(@test_facet, [body: value]))
     assert hit.id == id
     assert hit.created != nil
     assert hit.body == value
@@ -102,7 +102,7 @@ defmodule ApiTest do
   test "index document fields" do
     value = unique_text()
     id = post_node(document: %{@test_facet => [field: value]})
-    hit = hd(search_graph(@test_facet, ["field"], value))
+    hit = hd(search_graph(@test_facet, [field: value]))
     assert hit.id == id
     assert hit.created != nil
     assert hit.field == value
@@ -113,7 +113,7 @@ defmodule ApiTest do
     prop2_value = unique_text()
     id = post_node(props: [prop1: prop1_value], document: %{@test_facet => %{}})
     post_node(id, props: [prop2: prop2_value], document: %{@test_facet => %{}})
-    hit = hd(search_graph(@test_facet, ["prop2"], prop2_value))
+    hit = hd(search_graph(@test_facet, [prop2: prop2_value]))
     assert hit.id == id
     assert hit.prop1 == prop1_value
     assert hit.prop2 == prop2_value
@@ -123,7 +123,7 @@ defmodule ApiTest do
     value = unique_text()
     id = post_node(document: %{@test_facet => %{}})
     post_graph(%{ id => [document: %{@test_facet => [field: value]}] })
-    hit = hd(search_graph(@test_facet, ["field"], value))
+    hit = hd(search_graph(@test_facet, [field: value]))
     assert hit.id == id
     assert hit.field == value
     assert hit.created != nil
@@ -134,7 +134,7 @@ defmodule ApiTest do
     value = unique_text()
     id = post_node(props: [body: value], document: %{@test_facet => %{}})
     post_node(id, del: [props: [body: value], document: %{@test_facet => true}])
-    hits = search_graph(@test_facet, ["body"], value, 0)
+    hits = search_graph(@test_facet, [body: value], 0)
     assert hits == []
   end
 
@@ -154,8 +154,8 @@ defmodule ApiTest do
     call_post_assert("/query/#{id}", query) |> to_json
   end
 
-  defp search_graph(facet, fields, query, expectedCount \\ 1, attempts \\ 10) do
-    results = call_post_assert("/search/#{facet}", [fields: fields, query: query]) |> to_json
+  defp search_graph(facet, query, expectedCount \\ 1, attempts \\ 10) do
+    results = call_post_assert("/search/#{facet}", query) |> to_json
     cond do
       attempts <= 0 -> 
         flunk "timeout waiting for #{inspect query}"
@@ -163,7 +163,7 @@ defmodule ApiTest do
         results
       true ->
         :timer.sleep(200)
-        search_graph(facet, fields, query, expectedCount, attempts - 1)
+        search_graph(facet, query, expectedCount, attempts - 1)
     end
   end
 

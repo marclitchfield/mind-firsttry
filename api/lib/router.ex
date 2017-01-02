@@ -24,7 +24,7 @@ defmodule MindRouter do
   end
 
   post "/search/:facet" do
-    respond(conn, MindRepo.search_graph(facet, conn.params["fields"], conn.params["query"]))
+    respond(conn, MindRepo.search_graph(facet, conn.params))
   end
 
   match _ do

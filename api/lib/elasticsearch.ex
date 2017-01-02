@@ -23,16 +23,9 @@ defmodule ElasticSearch do
     end
   end
 
-  def search(facet, fields, query) do
+  def search(facet, query) do
     url = "/#{@index}/#{facet}/_search"
-    request = %{ 
-      query: %{ 
-        query_string: %{ 
-          "fields" => fields,
-          "query" => query
-        }
-      }
-    }
+    request = %{ query: %{ match_phrase_prefix: query } }
     IO.inspect {:elasticsearch_request, "POST", url, request}
     case post(url, request) do
       {:ok, %HTTPoison.Response{body: %{"error" => err}}} -> {:error, err}
