@@ -108,7 +108,6 @@ defmodule ApiTest do
     assert hit.field == value
   end
 
-  @tag :wip
   test "update document" do
     prop1_value = unique_text()
     prop2_value = unique_text()
@@ -130,6 +129,15 @@ defmodule ApiTest do
     assert hit.created != nil
   end
 
+  @tag :wip
+  test "delete indexed document" do
+    value = unique_text()
+    id = post_node(props: [body: value], document: %{@test_facet => %{}})
+    post_node(id, del: [props: [body: value], document: %{@test_facet => true}])
+    hits = search_graph(@test_facet, ["body"], value, 0)
+    assert hits == []
+  end
+
   defp post_node(opts \\ []) do
     call_post_assert("/node", opts)
   end
@@ -146,16 +154,16 @@ defmodule ApiTest do
     call_post_assert("/query/#{id}", query) |> to_json
   end
 
-  defp search_graph(facet, fields, query, attempts \\ 10) do
+  defp search_graph(facet, fields, query, expectedCount \\ 1, attempts \\ 10) do
     results = call_post_assert("/search/#{facet}", [fields: fields, query: query]) |> to_json
     cond do
       attempts <= 0 -> 
         flunk "timeout waiting for #{inspect query}"
-      length(results) > 0 ->
+      length(results) == expectedCount ->
         results
       true ->
         :timer.sleep(200)
-        search_graph(facet, fields, query, attempts - 1)
+        search_graph(facet, fields, query, expectedCount, attempts - 1)
     end
   end
 

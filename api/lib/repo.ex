@@ -18,14 +18,14 @@ defmodule MindRepo do
     opt = option_keywords(options)
     keywords = Map.put(opt, :props, Map.merge(opt[:props], new_node_props(id)))
     with {:ok, _} <- Dgraph.mutate(to_ops(keywords, id)),
-      {:ok, _} <- save_document(id, keywords),
+         {:ok, _} <- process_documents(id, keywords),
     do: {:ok, id}
   end
 
   def mutate_node(id, options) do
     keywords = option_keywords(options)
     with {:ok, response} <- Dgraph.mutate(to_ops(keywords, id)),
-      {:ok, _} <- save_document(id, keywords),
+         {:ok, _} <- process_documents(id, keywords),
     do: {:ok, response}
   end
 
@@ -33,22 +33,37 @@ defmodule MindRepo do
     keywords_map = for {id, options} <- options_map, into: %{}, do: {id, option_keywords(options)}
     quads = Enum.reduce(keywords_map, [], fn ({id, kw}, acc) -> acc ++ to_ops(kw, id) end)
     with {:ok, response} <- Dgraph.mutate(quads),
-      {:ok, _} <- save_documents(keywords_map),
+         {:ok, _} <- process_documents(keywords_map),
     do: {:ok, response}
   end
 
-  defp save_document(_id, []), do: {:ok, :nop}
-  defp save_document(id, keywords), do: save_document(id, keywords.document, keywords.props)
-
-  defp save_document(_id, map, _) when map == %{}, do: {:ok, :nop}
-  defp save_document(id, document, props) do
-    {facet, source} = hd(Enum.into(document, []))
-    ElasticSearch.index(facet, id, Map.merge(source, props))
+  defp process_documents(keywords_map) do
+    keywords_map
+      |> Enum.map(fn {id, keywords} -> Task.async(fn -> process_documents(id, keywords) end) end)
+      |> Enum.map(&Task.await(&1))
+      |> Enum.find({:ok, :success}, fn result -> elem(result, 0) == :error end)
   end
 
-  defp save_documents(keywords_map) do
-    keywords_map
-      |> Enum.map(fn {id, keywords} -> Task.async(fn -> save_document(id, keywords) end) end)
+  require IEx
+  defp process_documents(id, keywords) do
+    save_documents(id, keywords.document, keywords.props)
+    delete_documents(id, option_keywords(keywords.del))
+  end
+
+  defp save_documents(_id, empty, _) when empty == %{}, do: {:ok, :nop}
+  defp save_documents(id, document, props) do
+    document 
+      |> Enum.map(fn {facet, source} -> Task.async(
+          fn -> ElasticSearch.index(facet, id, Map.merge(source, props)) end) end)
+      |> Enum.map(&Task.await(&1))
+      |> Enum.find({:ok, :success}, fn result -> elem(result, 0) == :error end)
+  end
+
+  defp delete_documents(_id, empty) when empty == %{}, do: {:ok, :nop}
+  defp delete_documents(id, keywords) do
+    keywords.document
+      |> Enum.filter(fn {_, delete} -> delete end)
+      |> Enum.map(fn {facet, _} -> Task.async(fn -> ElasticSearch.delete(facet, id) end) end)
       |> Enum.map(&Task.await(&1))
       |> Enum.find({:ok, :success}, fn result -> elem(result, 0) == :error end)
   end

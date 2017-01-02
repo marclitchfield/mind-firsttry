@@ -1,5 +1,6 @@
 defmodule ElasticSearch do
   use HTTPoison.Base
+  @index Application.get_env(:api, :elastic_index)
 
   def process_url(url) do
     Application.get_env(:api, :elastic_url) <> url
@@ -13,21 +14,17 @@ defmodule ElasticSearch do
   end
 
   def index(facet, id, source) do
-    index = Application.get_env(:api, :elastic_index)
-    url = "/#{index}/#{facet}/#{id}/_update"
+    url = "/#{@index}/#{facet}/#{id}/_update"
     request = %{"doc" => source, "doc_as_upsert" => true}
-    IO.inspect {:elasticsearch_request, url, request}
-
+    IO.inspect {:elasticsearch_request, "POST", url, request}
     case post(url, request) do
       {:ok, %HTTPoison.Response{body: %{"error" => err}}} -> {:error, err}
       response -> response
     end
   end
 
-  import IEx
   def search(facet, fields, query) do
-    index = Application.get_env(:api, :elastic_index)
-    url = "/#{index}/#{facet}/_search"
+    url = "/#{@index}/#{facet}/_search"
     request = %{ 
       query: %{ 
         query_string: %{ 
@@ -36,12 +33,17 @@ defmodule ElasticSearch do
         }
       }
     }
-    IO.inspect {:elasticsearch_request, url, request}
-
+    IO.inspect {:elasticsearch_request, "POST", url, request}
     case post(url, request) do
       {:ok, %HTTPoison.Response{body: %{"error" => err}}} -> {:error, err}
       {:ok, %HTTPoison.Response{body: %{"hits" => %{"hits" => hits}}}} -> {:ok, Enum.map(hits, &build_hit(&1))}
     end
+  end
+  
+  def delete(facet, id) do
+    url = "/#{@index}/#{facet}/#{id}"
+    IO.inspect {:elasticsearch_request, "DELETE", url}
+    delete(url)
   end
 
   defp build_hit(hit), do: Map.merge(%{id: hit["_id"]}, hit["_source"])
