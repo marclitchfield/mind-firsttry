@@ -97,10 +97,10 @@ class IdeasRepo {
       del: {
         props: props,
         out: outbound,
-        in: inbound
-      },
-      document: {
-        [ROOT_SUBJECT]: {}
+        in: inbound,
+        document: {
+          [ROOT_SUBJECT]: true
+        }
       }
     };
 
