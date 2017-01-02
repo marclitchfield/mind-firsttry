@@ -9,8 +9,8 @@ defmodule MindRepo do
     end
   end
 
-  def search_graph(facet, query) do
-    ElasticSearch.search(facet, query)
+  def search_graph(facet, fields, query) do
+    ElasticSearch.search(facet, fields, query)
   end
 
   def new_node(options) do

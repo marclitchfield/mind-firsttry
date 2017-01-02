@@ -10,6 +10,7 @@ services:
     - apilog:/var/log
     environment:
     - MIND_DGRAPH_URL=http://mind-db:8080
+    - MIND_SEARCH_URL=http://mind-search:9200
     links:
     - mind-db
     - mind-search
@@ -28,8 +29,6 @@ services:
     image: kiasaki/alpine-elasticsearch 
     ports:
     - "5007:9200"
-    environment:
-    - MIND_SEARCH_URL=http://mind-search:9200
   mind-db:
     container_name: mind-db
     image: mind-db

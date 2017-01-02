@@ -24,10 +24,18 @@ defmodule ElasticSearch do
     end
   end
 
-  def search(facet, query) do
+  import IEx
+  def search(facet, fields, query) do
     index = Application.get_env(:api, :elastic_index)
     url = "/#{index}/#{facet}/_search"
-    request = %{ query: %{ prefix: query } }
+    request = %{ 
+      query: %{ 
+        query_string: %{ 
+          "fields" => fields,
+          "query" => query
+        }
+      }
+    }
     IO.inspect {:elasticsearch_request, url, request}
 
     case post(url, request) do

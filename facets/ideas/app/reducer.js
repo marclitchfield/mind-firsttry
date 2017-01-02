@@ -32,7 +32,7 @@ export default handleActions({
     });
   },
 
-  CREATE_IDEA_FULFILLED: (state, action) => {
+  CREATE_IDEA_FULFILLED: (state, action) => {    
     return Object.assign({}, state, {
       selectedIdea: Object.assign({}, state.selectedIdea, {
         children: state.selectedIdea.children.concat(action.payload)
@@ -42,9 +42,8 @@ export default handleActions({
 
   UPDATE_IDEA_FULFILLED: (state, action) => {
     return Object.assign({}, state, {
-      selectedIdea: state.selectedIdea ? Object.assign({}, state.selectedIdea, action.payload) : undefined,
-      rootIdeas: (state.rootIdeas || []).map(idea => 
-        idea.id === action.payload.id ? Object.assign({}, idea, action.payload) : idea)
+      selectedIdea: mergeIdea(state.selectedIdea, action.payload),
+      rootIdeas: (state.rootIdeas || []).map(idea => mergeIdea(idea, action.payload))
     });
   },
   
@@ -55,3 +54,11 @@ export default handleActions({
   }
 
 }, {});
+
+function mergeIdea(originalIdea, updatedIdea) {
+  const mergedIdea = originalIdea.id === updatedIdea.id ? Object.assign({}, originalIdea, updatedIdea) : originalIdea;
+  return Object.assign({}, mergedIdea, {
+    children: (mergedIdea.children || []).map(c => c.id === updatedIdea.id ? Object.assign({}, c, updatedIdea) : c),
+    parents: (mergedIdea.parents || []).map(p => mergeIdea(p, updatedIdea))
+  });
+}

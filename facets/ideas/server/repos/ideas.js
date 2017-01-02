@@ -5,7 +5,7 @@ import { SUPPORTED_TYPES, ROOT_TYPE } from "../../app/constants";
 
 const P = {
   BODY: "body",
-  CREATED: "created.at",
+  CREATED: "created",
   IS: "is",
   TYPE: "type",
   PARENT: "idea.parent",
@@ -41,18 +41,17 @@ class IdeasRepo {
       props: { [P.BODY]: idea.body },
       out: { [P.PARENT]: subject, [P.IS]: ideaType },
       in: { [P.CHILD]: subject },
-      document: {
-        body: idea.body,
-        type: ideaType,
-        children: []
+      document: { 
+        [ROOT_SUBJECT]: {
+          type: ideaType,
+          children: []
+        } 
       }
     };
-
     return axios
       .post(join(config.api_url, "node"), payload)
-      .then(response => {
-        return Object.assign({}, payload.props, { id: response.data, type: ideaType });
-      });
+      .then(response => Object.assign({}, payload.props, { id: response.data, type: ideaType }))
+      .catch(err => err)
   }
 
   updateIdea(idea) {
@@ -60,25 +59,23 @@ class IdeasRepo {
       props: { [P.BODY]: idea.body },
       out: idea._previous_type === idea.type ? {} : { [P.IS]: idea.type },
       del: idea._previous_type === idea.type ? {} : { out: { [P.IS]: idea._previous_type } },
-      projection: {
-        [ROOT_SUBJECT]: Object.assign({}, PROJECTION, {
-          children: this.childrenProjection(idea)
-        })
+      document: {
+        [ROOT_SUBJECT]: {
+          type: idea.type,
+          children: idea.children.map(c => {
+            return {
+              id: c.id,
+              type: c.type,
+              created: c.created
+            }
+          })
+        }
       }
     };
     return axios
       .post(join(config.api_url, `node/${idea.id}`), payload)
-      .then(response => { return idea });
-  }
-
-  childrenProjection(idea) {
-    return idea.children.map(c => {
-        return {
-          id: c.id,
-          type: c.type,
-          created: c.created
-        }
-      });
+      .then(response => { return idea })
+      .catch(err => err)
   }
 
   deleteIdea(idea) {
@@ -100,16 +97,17 @@ class IdeasRepo {
       del: {
         props: props,
         out: outbound,
-        in: inbound 
+        in: inbound
       },
-      projection: {
+      document: {
         [ROOT_SUBJECT]: {}
       }
     };
 
     return axios
       .post(join(config.api_url, `node/${idea.id}`), payload)
-      .then(response => { return 'ok'; });
+      .then(response => { return 'ok'; })
+      .catch(err => err)
   }
 
   init() {
@@ -125,7 +123,7 @@ class IdeasRepo {
     return axios
       .post(join(config.api_url, 'graph'), payload) 
       .then(() => "initialized")
-      .catch(err => undefined);
+      .catch(err => err);
   }
 }
 
@@ -141,7 +139,7 @@ function queryProperties({ children, parents }) {
     [P.CHILD]: children ? Object.assign({}, node, body, { [P.CHILD]: node }) : node
   };
   const nodeParents = parents ? {
-    [P.PARENT]: Object.assign({}, node, body)
+    [P.PARENT]: Object.assign({}, node, body, { [P.CHILD]: node })
   } : {};
 
   return Object.assign({}, node, body, nodeChildren, nodeParents);
@@ -157,8 +155,8 @@ function toIdea(ideaResponse) {
     body: ideaResponse[P.BODY],
     type: ideaResponse[P.IS] !== undefined ? ideaResponse[P.IS][0].id : ROOT_TYPE,
     created: ideaResponse[P.CREATED],
-    children: (ideaResponse[P.CHILD] || []).map(i => toIdea(i)),
-    parents: (ideaResponse[P.PARENT] || []).map(i => toIdea(i))
+    children: (ideaResponse[P.CHILD] || []).map(c => toIdea(c)),
+    parents: (ideaResponse[P.PARENT] || []).filter(p => p.id !== undefined).map(p => toIdea(p))
   };
 }
 

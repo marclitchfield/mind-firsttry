@@ -130,13 +130,15 @@ export default class SelectedIdea extends React.Component {
   }
 
   handleCreateSubmitted(newIdea) {
-    this.props.actions.createIdea(newIdea, this.props.selectedIdea.id, newIdea.type);
-    this.transitionTo(`/idea/${this.props.selectedIdea.id}`);
+    this.props.actions.createIdea(newIdea, this.props.selectedIdea.id, newIdea.type)
+      .then(() => this.props.actions.updateIdea(this.props.selectedIdea))
+      .then(() => this.transitionTo(`/idea/${this.props.selectedIdea.id}`));
   }
   
   handleEditSubmitted(editedIdea) {
-    this.props.actions.updateIdea(editedIdea);
-    this.transitionTo(`/idea/${this.props.selectedIdea.id}`);
+    this.props.actions.updateIdea(editedIdea)
+      .then(() => Promise.all(this.props.selectedIdea.parents.map(p => this.props.actions.updateIdea(p))))
+      .then(() => this.transitionTo(`/idea/${this.props.selectedIdea.id}`));
   }
 
   handleCancel(idea) {
