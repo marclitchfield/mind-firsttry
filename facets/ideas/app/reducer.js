@@ -43,7 +43,10 @@ export default handleActions({
   UPDATE_IDEA_FULFILLED: (state, action) => {
     return Object.assign({}, state, {
       selectedIdea: mergeIdea(state.selectedIdea, action.payload),
-      rootIdeas: (state.rootIdeas || []).map(idea => mergeIdea(idea, action.payload))
+      rootIdeas: (state.rootIdeas || []).map(idea => mergeIdea(idea, action.payload)),
+      search: Object.assign({}, state.search, {
+        results: ((state.search || {}).results || []).map(idea => mergeIdea(idea, action.payload))
+      })
     });
   },
   
@@ -53,6 +56,34 @@ export default handleActions({
       selectedIdea: Object.assign({}, state.selectedIdea, {
         parents: removeIdea(state.selectedIdea.parents, action.meta.id),
         children: removeIdea(state.selectedIdea.children, action.meta.id)
+      }),
+      search: Object.assign({}, state.search, {
+        results: removeIdea((state.search || {}).results)
+      })
+    });
+  },
+
+  CLEAR_SEARCH: (state, action) => {
+    return Object.assign({}, state, {
+      search: {
+        query: '',
+        results: []
+      }
+    });
+  },
+
+  SEARCH_IDEAS_PENDING: (state, action) => {
+    return Object.assign({}, state, {
+      search: Object.assign({}, state.search, {
+        query: action.meta.query
+      })
+    })
+  },
+
+  SEARCH_IDEAS_FULFILLED: (state, action) => {
+    return Object.assign({}, state, {
+      search: Object.assign({}, state.search, {
+        results: action.payload.data || []
       })
     });
   }

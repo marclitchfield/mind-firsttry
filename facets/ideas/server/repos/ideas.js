@@ -107,7 +107,14 @@ class IdeasRepo {
     return axios
       .post(join(config.api_url, `node/${idea.id}`), payload)
       .then(response => { return 'ok'; })
-      .catch(err => err)
+      .catch(err => err);
+  }
+
+  search(query) {
+    return axios
+      .post(join(config.api_url, "/search", ROOT_SUBJECT), { body: { query } })
+      .then(response => response.data)
+      .catch(err => err);
   }
 
   init() {
@@ -143,10 +150,6 @@ function queryProperties({ children, parents }) {
   } : {};
 
   return Object.assign({}, node, body, nodeChildren, nodeParents);
-}
-
-function buildProjection(idea) {
-  
 }
 
 function toIdea(ideaResponse) {

@@ -26,6 +26,12 @@ router.get("/idea/:id/:op?", (request, response, next) => {
   }));
 });
 
+router.get("/search", (request, response, next) => {
+  renderIndex(request, response, next, () => new Promise((resolve, reject) => resolve({
+    shouldFetch: true
+  })));
+})
+
 function renderIndex(request, response, next, load) {
   load().then(initialState => {
     const store = createStore(initialState);

@@ -19,6 +19,10 @@ router.post("/idea/delete", (req, res) => {
   res.json(ideasRepo.deleteIdea(req.body));
 });
 
+router.get("/idea/search", (req, res) => {
+  res.json(ideasRepo.search(req.query.q));
+});
+
 router.put("/ideas/:id", (req, res) => {
   res.json(ideasRepo.updateIdea(req.body));
 });
@@ -26,6 +30,5 @@ router.put("/ideas/:id", (req, res) => {
 router.post("/init", (req, res) => {
   res.json(ideasRepo.init());
 })
-
 
 module.exports = router;

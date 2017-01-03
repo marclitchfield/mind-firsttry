@@ -56,3 +56,19 @@ export function deleteIdea(idea) {
     }
   }
 }
+
+export function clearSearch() {
+  return {
+    type: "CLEAR_SEARCH"
+  }
+}
+
+export function searchIdeas(query) {
+  return {
+    type: "SEARCH_IDEAS",
+    payload: axios.get(`/api/idea/search?q=${query}`),
+    meta: {
+      query: query
+    }
+  }
+}

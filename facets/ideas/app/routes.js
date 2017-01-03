@@ -6,6 +6,7 @@ import SelectedIdea from "./components/SelectedIdea";
 import IdeaList from "./components/IdeaList";
 import IdeaSubmit from "./components/IdeaSubmit";
 import IdeaEdit from "./components/IdeaEdit";
+import IdeaSearch from "./components/IdeaSearch";
 import { fetchRootIdeas, fetchIdea, shouldFetch } from "./actions";
 
 function loadData(store, action) {
@@ -37,6 +38,7 @@ export default function routes(store) {
         <Route path="new" component={SelectedIdea} onEnter={loadData(store, (params) => fetchIdea(params.id))} />
         <Route path="edit" component={SelectedIdea} onEnter={loadData(store, (params) => fetchIdea(params.id))} />
       </Route>
+      <Route path="/search" component={IdeaSearch} />
     </Route>
   );
 }

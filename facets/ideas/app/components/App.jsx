@@ -9,7 +9,8 @@ import Header from "./Header";
   store => { 
     return {
       rootIdeas: store.rootIdeas, 
-      selectedIdea: store.selectedIdea 
+      selectedIdea: store.selectedIdea,
+      search: store.search
     } 
   }, 
   dispatch => { return { actions: bindActionCreators(actionCreators, dispatch) } }

@@ -10,6 +10,10 @@ select:focus {
     transition: box-shadow 0.5s, border-color 0.25s ease-in-out;
 }
 
+.title-bar-search {
+  float: right;
+}
+
 div[data-reactroot] {
   padding: 0 !important;
   border: none !important;
@@ -209,4 +213,8 @@ div[role=menu] .button {
 
 .delete-confirm-modal .buttons {
   margin: 20px 14px 0 14px;
+}
+
+.idea-search {
+  padding: 8px;
 }
