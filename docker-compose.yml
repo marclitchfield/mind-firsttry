@@ -35,7 +35,8 @@ services:
     entrypoint: dgraph
     ports:
     - "5008:8080"
-    image: dgraph/dgraph
+    image: mind-db 
+    build: ./db
     volumes:
     - datavolume:/data
 volumes:
