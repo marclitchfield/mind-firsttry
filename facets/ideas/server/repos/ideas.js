@@ -137,7 +137,8 @@ class IdeasRepo {
 function queryProperties({ children, parents }) {
   const node = { 
     [P.IS]: {},
-    [P.CREATED]: true
+    [P.CREATED]: true,
+    "created.at": true   // TODO: remove created.at once data on live site has been migrated or reset
   };
   const body = {
     [P.BODY]: true
@@ -157,7 +158,7 @@ function toIdea(ideaResponse) {
     id: ideaResponse.id,
     body: ideaResponse[P.BODY],
     type: ideaResponse[P.IS] !== undefined ? ideaResponse[P.IS][0].id : ROOT_TYPE,
-    created: ideaResponse[P.CREATED],
+    created: ideaResponse[P.CREATED] || ideaResponse["created.at"],  // TODO: remove created.at once data on live site has been migrated or reset
     children: (ideaResponse[P.CHILD] || []).map(c => toIdea(c)),
     parents: (ideaResponse[P.PARENT] || []).filter(p => p.id !== undefined).map(p => toIdea(p))
   };
