@@ -29,14 +29,3 @@ run this in a new console:
 ```
 npm run webpack-watch
 ```
-
-## Fish commands
-
-To interact with the facet via the command line, try these commands 
-from ```../../api/scripts/commands.fish```:
-
-```fish
-set idea1 (new_node ideas.facet root.idea idea "I think")
-set idea2 (new_node $idea1 therefore idea "I am")
-set idea3 (new_node ideas.facet root.idea idea "Socrates is mortal")
-```
