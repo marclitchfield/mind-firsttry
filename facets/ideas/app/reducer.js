@@ -49,7 +49,11 @@ export default handleActions({
   
   DELETE_IDEA_FULFILLED: (state, action) => {
     return Object.assign({}, state, {
-      rootIdeas: (state.rootIdeas || []).filter(idea => idea.id !== action.payload.id)
+      rootIdeas: removeIdea(state.rootIdeas, action.meta.id),
+      selectedIdea: Object.assign({}, state.selectedIdea, {
+        parents: removeIdea(state.selectedIdea.parents, action.meta.id),
+        children: removeIdea(state.selectedIdea.children, action.meta.id)
+      })
     });
   }
 
@@ -61,4 +65,13 @@ function mergeIdea(originalIdea, updatedIdea) {
     children: (mergedIdea.children || []).map(c => c.id === updatedIdea.id ? Object.assign({}, c, updatedIdea) : c),
     parents: (mergedIdea.parents || []).map(p => mergeIdea(p, updatedIdea))
   });
+}
+
+function removeIdea(ideas, id) {
+  return (ideas || [])
+    .filter(idea => idea.id !== id)
+    .map(idea => Object.assign({}, idea, {
+      children: removeIdea(idea.children, id),
+      parents: removeIdea(idea.parents, id)
+    }));
 }

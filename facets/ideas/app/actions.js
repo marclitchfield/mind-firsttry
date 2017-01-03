@@ -50,6 +50,9 @@ export function updateIdea(idea) {
 export function deleteIdea(idea) {
   return {
     type: "DELETE_IDEA",
-    payload: axios.post("/api/idea/delete", idea).then(response => response.data)
+    payload: axios.post("/api/idea/delete", idea).then(response => response.data),
+    meta: {
+      id: idea.id
+    }
   }
 }

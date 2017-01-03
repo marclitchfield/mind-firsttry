@@ -154,12 +154,14 @@ export default class SelectedIdea extends React.Component {
   }
 
   onDeleteConfirmed() {
-    const { actions, selectedIdea, router } = this.props;
+    const { router } = this.props;
     this.setState({ deleteModalIsOpen: false });
-    actions.deleteIdea(selectedIdea).then(() => {
-      // do not call transitionTo; since we are transitioning to a different idea, we want a fetch to happen.
-      this.props.router.replace(selectedIdea.parents.length > 0 ? `/idea/${selectedIdea.parents[0].id}` : '/');
-    });
+    this.props.actions.deleteIdea(this.props.selectedIdea)
+      .then(() => { console.log('after delete', this.props.selectedIdea); return Promise.all(this.props.selectedIdea.parents.map(p => this.props.actions.updateIdea(p))) })
+      .then(() => {
+        // do not call transitionTo; since we are transitioning to a different idea, we want a fetch to happen.
+        this.props.router.replace(this.props.selectedIdea.parents.length > 0 ? `/idea/${this.props.selectedIdea.parents[0].id}` : '/');
+      });
   }
 
 }
