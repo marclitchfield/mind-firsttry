@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import DebounceInput from "react-debounce-input";
 import IdeaList from "./IdeaList";
 
 export default class IdeaSearch extends React.Component {
@@ -15,7 +16,7 @@ export default class IdeaSearch extends React.Component {
     const search = Object.assign({}, this.props.search);
     return (
       <div className="idea-search">
-        <input type="text" ref="ideaSearch" value={this.state.query} onChange={this.handleQueryChange} placeholder="Search" />
+        <DebounceInput debounceTimeout={200} minLength={1} ref="ideaSearch" value={this.state.query} onChange={this.handleQueryChange} placeholder="Search" />
         <div className="children">
           <IdeaList ideas={search.results || []} />
         </div>
