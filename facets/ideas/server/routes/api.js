@@ -15,8 +15,8 @@ router.post("/ideas/:id?/:predicate?", (req, res) => {
   res.json(ideasRepo.createIdea(req.body, req.params.id, req.params.predicate));
 });
 
-router.post("/idea/delete", (req, res) => {
-  res.json(ideasRepo.deleteIdea(req.body));
+router.delete("/idea/:id", (req, res) => {
+  res.json(ideasRepo.deleteIdea(req.params.id));
 });
 
 router.get("/idea/search", (req, res) => {

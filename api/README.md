@@ -11,7 +11,7 @@ mix compile
 ```
 
 Ensure that the mind-db is running at ```http://localhost:5008```. 
-You can change this location with the ```MIND_DGRAPH_URL``` environment variable.
+You can change this location with the ```MIND_NEO4J_URL``` environment variable.
 
 To start the server, run
 ```

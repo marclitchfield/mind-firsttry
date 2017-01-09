@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import IdeaType from "./IdeaType";
 import { SUPPORTED_TYPES } from "../constants";
+import _ from "lodash";
 
 const DEFAULT_TYPE = "reason";
 
@@ -36,7 +37,7 @@ export default class IdeaSubmit extends React.Component {
   submit(event) {
     event.preventDefault();
     const edited = this.props.selectedIdea !== undefined ? {
-      _previous_type: this.props.selectedIdea.type
+      _original: _.cloneDeep(this.props.selectedIdea)
     } : {};
     this.props.onSubmit(Object.assign({}, edited, this.state));
     this.setState({ body: '' });

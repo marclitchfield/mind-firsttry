@@ -7,6 +7,7 @@ defmodule ApiTest do
   @special_chars ~s(sq:' dq:" bs:\\ # lb:} rb:{ amp:&)
   @test_facet "test.facet"
 
+  @tag :wip
   test "post node with properties" do
     id = post_node(props: [prop: "value"])
     response = query_graph(id, [prop: true, created: true])
@@ -15,18 +16,20 @@ defmodule ApiTest do
     assert response.prop == "value"
   end
 
+  @tag :wip
   test "post node with link to other node" do
     target = post_node()
     source = post_node(out: [to: target])
     response = query_graph(source, [to: %{}])
-    assert hd(response.to).id == target
+    assert response.to.id == target
   end
 
+  @tag :wip
   test "post node with link from other node" do
     source = post_node()
     target = post_node(in: [to: source])
     response = query_graph(source, [to: %{}])
-    assert hd(response.to).id == target
+    assert response.to.id == target
   end
 
   test "update and insert properties for existing node" do
@@ -41,7 +44,7 @@ defmodule ApiTest do
     source = post_node()
     target = post_node(in: [to: source], out: [from: source])
     response = query_graph(source, [to: [from: %{}]])
-    assert hd(response.to).id == target
+    assert response.to.id == target
     assert hd(hd(response.to).from).id == source
   end
 
@@ -129,7 +132,6 @@ defmodule ApiTest do
     assert hit.created != nil
   end
 
-  @tag :wip
   test "delete indexed document" do
     value = unique_text()
     id = post_node(props: [body: value], document: %{@test_facet => %{}})

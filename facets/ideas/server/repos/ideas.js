@@ -4,15 +4,11 @@ import config from "../../config";
 import { SUPPORTED_TYPES, ROOT_TYPE } from "../../app/constants";
 
 const P = {
-  BODY: "body",
-  CREATED: "created",
-  IS: "is",
-  TYPE: "type",
-  PARENT: "idea.parent",
-  CHILD: "idea.child"
+  PARENT: "idea_parent",
+  CHILD: "idea_child"
 };
 
-const ROOT_SUBJECT = "ideas.facet";
+const ROOT_SUBJECT = "ideas_facet";
 
 class IdeasRepo {
 
@@ -22,6 +18,7 @@ class IdeasRepo {
         [P.CHILD]: queryProperties({ children: false, parents: false }) 
       })
       .then(response => {
+        console.log('response', response);
         return [].concat(response.data[P.CHILD] || []).map((idea) => toIdea(idea));
       });
   }
@@ -38,8 +35,8 @@ class IdeasRepo {
     const ideaType = type || ROOT_TYPE;
     const subject = parent === undefined ? ROOT_SUBJECT : parent;
     const payload = {
-      props: { [P.BODY]: idea.body },
-      out: { [P.PARENT]: subject, [P.IS]: ideaType },
+      props: { body: idea.body },
+      out: { [P.PARENT]: subject, is: ideaType },
       in: { [P.CHILD]: subject },
       document: { 
         [ROOT_SUBJECT]: {
@@ -56,9 +53,9 @@ class IdeasRepo {
 
   updateIdea(idea) {
     const payload = {
-      props: { [P.BODY]: idea.body },
-      out: idea._previous_type === idea.type ? {} : { [P.IS]: idea.type },
-      del: idea._previous_type === idea.type ? {} : { out: { [P.IS]: idea._previous_type } },
+      props: { body: idea.body },
+      out: idea._original.type === idea.type ? {} : { is: idea.type },
+      del: idea._original.type === idea.type ? {} : { out: { is: idea._original.type } },
       document: {
         [ROOT_SUBJECT]: {
           type: idea.type,
@@ -78,34 +75,9 @@ class IdeasRepo {
       .catch(err => err)
   }
 
-  deleteIdea(idea) {
-    const props = {
-      id: idea.id,
-      [P.BODY]: idea.body,
-      [P.CREATED]: idea.created
-    };
-
-    const inbound = Object.assign({ [P.TYPE]: idea.type },
-      idea.children.reduce((acc, c) => Object.assign({}, acc, { [P.PARENT]: c.id }), {}),
-      idea.parents.reduce((acc, p) => Object.assign({}, acc, { [P.CHILD]: p.id }), {}));
-
-    const outbound = Object.assign({ [P.IS]: idea.type }, 
-      idea.children.reduce((acc, c) => Object.assign({}, acc, { [P.CHILD]: c.id }), {}),
-      idea.parents.reduce((acc, p) => Object.assign({}, acc, { [P.PARENT]: p.id }), {}));
-
-    const payload = {
-      del: {
-        props: props,
-        out: outbound,
-        in: inbound,
-        document: {
-          [ROOT_SUBJECT]: true
-        }
-      }
-    };
-
+  deleteIdea(id) {
     return axios
-      .post(join(config.api_url, `node/${idea.id}`), payload)
+      .delete(join(config.api_url, `node/${id}`), payload)
       .then(response => { return 'ok'; })
       .catch(err => err);
   }
@@ -122,8 +94,8 @@ class IdeasRepo {
       Object.assign({}, map, {
         [type]: {
           props: { id: type }, 
-          out: { [P.IS]: ROOT_TYPE }, 
-          in: { [P.TYPE]: ROOT_TYPE }
+          out: { is: ROOT_TYPE }, 
+          in: { type: ROOT_TYPE }
         }
       }), { idea: { props: { id: ROOT_TYPE } } });
 
@@ -137,8 +109,7 @@ class IdeasRepo {
 function queryProperties({ children, parents }) {
   const node = { 
     [P.IS]: {},
-    [P.CREATED]: true,
-    "created.at": true   // TODO: remove created.at once data on live site has been migrated or reset
+    [P.CREATED]: true
   };
   const body = {
     [P.BODY]: true
@@ -158,7 +129,7 @@ function toIdea(ideaResponse) {
     id: ideaResponse.id,
     body: ideaResponse[P.BODY],
     type: ideaResponse[P.IS] !== undefined ? ideaResponse[P.IS][0].id : ROOT_TYPE,
-    created: ideaResponse[P.CREATED] || ideaResponse["created.at"],  // TODO: remove created.at once data on live site has been migrated or reset
+    created: ideaResponse[P.CREATED],
     children: (ideaResponse[P.CHILD] || []).map(c => toIdea(c)),
     parents: (ideaResponse[P.PARENT] || []).filter(p => p.id !== undefined).map(p => toIdea(p))
   };
