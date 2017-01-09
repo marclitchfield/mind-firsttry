@@ -34,21 +34,17 @@ defmodule MindRepo do
     keywords_map = for {id, options} <- options_map, into: %{}, do: {id, option_keywords(options)}
     with {:ok, response} <- mutate_nodes(keywords_map),
          {:ok, _} <- process_documents(keywords_map),
-    do: {:ok, response}
+    do: :ok
   end
 
   defp mutate_nodes(keywords_map) do
-    keywords_map
-      |> Enum.map(fn {id, keywords} -> Task.async(fn -> Neo4j.mutate(id, keywords) end) end)
-      |> Enum.map(&Task.await(&1))
-      |> Enum.find({:ok, :success}, fn result -> elem(result, 0) == :error end)
+    keywords_map |> parallel_do(fn (id, keywords) -> 
+      Neo4j.mutate(id, keywords) end)
   end
 
   defp process_documents(keywords_map) do
-    keywords_map
-      |> Enum.map(fn {id, keywords} -> Task.async(fn -> process_documents(id, keywords) end) end)
-      |> Enum.map(&Task.await(&1))
-      |> Enum.find({:ok, :success}, fn result -> elem(result, 0) == :error end)
+    keywords_map |> parallel_do(fn (id, keywords) -> 
+      process_documents(id, keywords) end)
   end
 
   defp process_documents(id, keywords) do
@@ -58,18 +54,20 @@ defmodule MindRepo do
 
   defp save_documents(_id, empty, _) when empty == %{}, do: {:ok, :nop}
   defp save_documents(id, document, props) do
-    document 
-      |> Enum.map(fn {facet, source} -> Task.async(
-          fn -> ElasticSearch.index(facet, id, Map.merge(source, props)) end) end)
-      |> Enum.map(&Task.await(&1))
-      |> Enum.find({:ok, :success}, fn result -> elem(result, 0) == :error end)
+    document |> parallel_do(fn (facet, source) -> 
+      ElasticSearch.index(facet, id, Map.merge(source, props)) end)
   end
 
   defp delete_documents(_id, empty) when empty == %{}, do: {:ok, :nop}
   defp delete_documents(id, keywords) do
-    keywords.document
+    keywords.document 
       |> Enum.filter(fn {_, delete} -> delete end)
-      |> Enum.map(fn {facet, _} -> Task.async(fn -> ElasticSearch.delete(facet, id) end) end)
+      |> parallel_do(fn(facet, _) -> ElasticSearch.delete(facet, id) end)
+  end
+
+  defp parallel_do(map, func) do
+    map
+      |> Enum.map(fn {k, v} -> Task.async(fn -> func.(k, v) end) end)
       |> Enum.map(&Task.await(&1))
       |> Enum.find({:ok, :success}, fn result -> elem(result, 0) == :error end)
   end

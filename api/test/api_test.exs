@@ -7,7 +7,6 @@ defmodule ApiTest do
   @special_chars ~s(sq:' dq:" bs:\\ # lb:} rb:{ amp:&)
   @test_facet "test.facet"
 
-  @tag :wip
   test "post node with properties" do
     id = post_node(props: [prop: "value"])
     response = query_graph(id, [prop: true, created: true])
@@ -16,7 +15,6 @@ defmodule ApiTest do
     assert response.prop == "value"
   end
 
-  @tag :wip
   test "post node with link to other node" do
     target = post_node()
     source = post_node(out: [to: target])
@@ -24,7 +22,6 @@ defmodule ApiTest do
     assert response.to.id == target
   end
 
-  @tag :wip
   test "post node with link from other node" do
     source = post_node()
     target = post_node(in: [to: source])
@@ -32,6 +29,7 @@ defmodule ApiTest do
     assert response.to.id == target
   end
 
+  @tag :wip
   test "update and insert properties for existing node" do
     id = post_node(props: [prop1: "value"])
     post_graph(%{ id => [props: [prop1: "updated", prop2: "inserted"]]})

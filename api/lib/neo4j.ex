@@ -31,7 +31,7 @@ defmodule Neo4j do
 
   defp mutation(id, ops) do
     with {:ok, valid_ops} <- validate(ops),
-         mutation <- cypher_mutation(id, ops),
+         mutation <- cypher_mutation(id, valid_ops),
     do: {:ok, mutation}
   end
 
@@ -48,7 +48,7 @@ defmodule Neo4j do
     query |> cypher_terms(fn(k, v, i) -> query_match_terms(k, v, subject, i) end, " ")
   end
 
-  defp query_match_terms(key, value, subject, i) when value == true, do: ""
+  defp query_match_terms(_key, value, _subject, _i) when value == true, do: ""
   defp query_match_terms(key, value, subject, i) when is_map(value) do
     object = subject <> "_#{i}"
     "OPTIONAL MATCH (#{subject})-[:#{key}]->(#{object}) " <> query_matches(value, object)
@@ -62,7 +62,7 @@ defmodule Neo4j do
       |> Enum.join(", ")
   end
 
-  defp query_return_term(key, value, subject, i) when value == true, do: "#{key}: #{subject}.#{key}"
+  defp query_return_term(key, value, subject, _i) when value == true, do: "#{key}: #{subject}.#{key}"
   defp query_return_term(key, value, subject, i) when is_map(value) do
     object = subject <> "_#{i}"
     body = query_returns(value, object)
@@ -71,11 +71,20 @@ defmodule Neo4j do
 
   defp cypher_mutation(id, ops) do
     node = "MERGE (n {id: {id}}) ON CREATE SET n = {props} ON MATCH SET n += {props} "
-    outs = ops.out |> cypher_terms(fn(r, t, i) -> "MERGE (t_#{i} {id: '#{t}'}) MERGE (n)-[:#{r}]->(t_#{i}) " end)
-    ins = ops.in |> cypher_terms(fn(r, s, i) -> "MERGE (s_#{i} {id: '#{s}'}) MERGE (s_#{i})-[:#{r}]->(n) " end)
+    set_outs = ops.out |> cypher_terms(fn(r, t, i) -> 
+      "MERGE (t_#{i} {id: '#{t}'}) MERGE (n)-[:#{r}]->(t_#{i}) " end)
+    set_ins  = ops.in  |> cypher_terms(fn(r, s, i) -> 
+      "MERGE (s_#{i} {id: '#{s}'}) MERGE (s_#{i})-[:#{r}]->(n) " end)
+    del_props = ops.del.props |> cypher_terms(fn (p, _, _) ->
+      "REMOVE n.#{p} " end)
+    del_outs = ops.del.out |> cypher_terms(fn(r, t, i) -> 
+      "MATCH (n)-[r_out_#{i}:#{r}]->(d_t_#{i} {id: '#{t}'}) DELETE r_out_#{i} " end)
+    del_ins  = ops.del.in  |> cypher_terms(fn(r, s, i) ->
+      "MATCH (d_s_#{i} {id: '#{s}'})-[r_in_#{i}:#{r}]->(n) DELETE r_in_#{i} " end)
+
     return = "RETURN {node: n}"
     %{
-      "query" => node <> outs <> ins <> return, 
+      "query" => node <> set_outs <> set_ins <> del_props <> del_outs <> del_ins <> return, 
       "params" => %{ "id" => id, "props" => ops.props }
      }
   end
@@ -104,9 +113,9 @@ defmodule Neo4j do
 
   defp execute({:ok, payload}) do
     case post("/db/data/cypher", payload) do
-      {:ok, %HTTPoison.Response{status_code: code, body: %{"cause" => %{"errors" => err}}}} when code != 200 -> 
+      {:ok, %Response{status_code: code, body: %{"cause" => %{"errors" => err}}}} when code != 200 -> 
         {:error, Enum.map(err, fn e -> e["message"] end)}
-      {:ok, %HTTPoison.Response{status_code: 200, body: %{"data" => data}}} ->
+      {:ok, %Response{status_code: 200, body: %{"data" => data}}} ->
         {:ok, Enum.map(data, fn d -> hd(d)["node"] end)}
       error = {:error, _} -> error
     end
