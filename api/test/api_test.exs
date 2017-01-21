@@ -19,17 +19,16 @@ defmodule ApiTest do
     target = post_node()
     source = post_node(out: [to: target])
     response = query_graph(source, [to: %{}])
-    assert response.to.id == target
+    assert hd(response.to).id == target
   end
 
   test "post node with link from other node" do
     source = post_node()
     target = post_node(in: [to: source])
     response = query_graph(source, [to: %{}])
-    assert response.to.id == target
+    assert hd(response.to).id == target
   end
 
-  @tag :wip
   test "update and insert properties for existing node" do
     id = post_node(props: [prop1: "value"])
     post_graph(%{ id => [props: [prop1: "updated", prop2: "inserted"]]})
@@ -42,7 +41,7 @@ defmodule ApiTest do
     source = post_node()
     target = post_node(in: [to: source], out: [from: source])
     response = query_graph(source, [to: [from: %{}]])
-    assert response.to.id == target
+    assert hd(response.to).id == target
     assert hd(hd(response.to).from).id == source
   end
 
@@ -67,7 +66,7 @@ defmodule ApiTest do
     id = post_node(props: [delete_me: "value"])
     post_node(id, del: [props: [delete_me: "value"]])
     response = query_graph(id, [delete_me: true])
-    assert Map.has_key?(response, :delete_me) == false
+    assert response.delete_me == nil
   end
 
   test "update link between existing nodes" do

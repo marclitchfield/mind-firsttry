@@ -2,12 +2,8 @@ defmodule MindRepo do
   @id_pred "id"
   @created_pred "created"
 
-  require IEx
   def query_graph(id, query) do
-    case Neo4j.query(id, query) do
-      {:ok, response} -> IEx.pry; {:ok, hd(response)}
-      error -> error
-    end
+    Neo4j.query(id, query) |> graph_response(id, query)
   end
 
   def search_graph(facet, query) do
@@ -16,7 +12,7 @@ defmodule MindRepo do
 
   def new_node(options) do
     id = UUID.uuid4()
-    opt = option_keywords(options)
+    opt = option_map(options)
     keywords = Map.put(opt, :props, Map.merge(opt[:props], new_node_props(id)))
     with {:ok, _} <- Neo4j.mutate(id, keywords),
          {:ok, _} <- process_documents(id, keywords),
@@ -24,17 +20,42 @@ defmodule MindRepo do
   end
 
   def mutate_node(id, options) do
-    keywords = option_keywords(options)
+    keywords = option_map(options)
     with {:ok, response} <- Neo4j.mutate(id, keywords),
          {:ok, _} <- process_documents(id, keywords),
     do: {:ok, response}
   end
 
   def mutate_graph(options_map) do
-    keywords_map = for {id, options} <- options_map, into: %{}, do: {id, option_keywords(options)}
-    with {:ok, response} <- mutate_nodes(keywords_map),
+    keywords_map = for {id, options} <- options_map, into: %{}, do: {id, option_map(options)}
+    with {:ok, _} <- mutate_nodes(keywords_map),
          {:ok, _} <- process_documents(keywords_map),
     do: :ok
+  end
+
+  defp graph_response(error = {:error, _}), do: error
+  defp graph_response(error = {:error, _, _}), do: error
+  defp graph_response({:ok, graph}, id, query) do
+    root = graph.nodes |> Enum.find(fn n -> n["properties"]["id"] == id end)
+    resp = build_response(graph, root, query)
+    {:ok, resp}
+  end
+
+  defp build_response(graph, subject, query) do
+    query 
+      |> Enum.concat([{"id", true}])
+      |> Enum.map(fn {k, v} -> build_response_node(graph, subject, query, k, v) end) 
+      |> Enum.into(%{})
+  end
+
+  defp build_response_node(_graph, subject, _query, key, value) when value == true, do: {key, subject["properties"][key]}
+  defp build_response_node(graph, subject, query, key, value) when is_map(value) do
+    relationships = Enum.filter(graph.relationships, fn r -> r["startNode"] == subject["id"] && r["type"] == key end)
+    children = relationships |> Enum.map(fn r ->
+      child = Enum.find(graph.nodes, fn n -> n["id"] == r["endNode"] end)
+      build_response(graph, child, query[key])
+    end)
+    {key, children}
   end
 
   defp mutate_nodes(keywords_map) do
@@ -72,15 +93,13 @@ defmodule MindRepo do
       |> Enum.find({:ok, :success}, fn result -> elem(result, 0) == :error end)
   end
 
-  defp option_keywords(options) do
-    defaults = [props: %{}, in: %{}, out: %{}, del: %{props: %{}, in: %{}, out: %{}, document: %{}}, document: %{}]
-    option_kw = Enum.map(options, fn({key, value}) -> {String.to_atom(key), value} end)
-    Keyword.merge(defaults, option_kw) |> Enum.into(%{})
+  defp option_map(options) do
+    defaults = %{props: %{}, in: %{}, out: %{}, document: %{}, del: %{
+      props: %{}, in: %{}, out: %{}, document: %{}
+    }}
+    map = AtomicMap.convert(options, safe: true)
+    MapUtils.deep_merge(defaults, map)
   end
-
-  defp prop_quads(props, id), do: props |> Enum.map(fn {p, o} -> Neo4j.quad(id, p, [value: o]) end)
-  defp in_quads(ins, id), do: ins |> Enum.map(fn {p, s} -> Neo4j.quad(s, p, [node: id]) end)
-  defp out_quads(outs, id), do: outs |> Enum.map(fn {p, o} -> Neo4j.quad(id, p, [node: o]) end)
 
   defp new_node_props(id) do
     %{@id_pred => id, @created_pred => (DateTime.utc_now |> DateTime.to_string)}

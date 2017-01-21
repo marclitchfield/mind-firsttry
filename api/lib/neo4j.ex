@@ -12,13 +12,11 @@ defmodule Neo4j do
     body |> Poison.encode!
   end
 
+  def process_request_headers(headers), do: [{"Content-Type", "application/json"}] ++ headers
+
   def process_response_body(body) do
     IO.inspect {:neo4j_response, body |> Poison.decode!}
     body |> Poison.decode! 
-  end
-
- def quad(subject, predicate, object) do
-    {[subject: subject, predicate: predicate, object: object]}
   end
 
   def query(id, query) do
@@ -35,38 +33,22 @@ defmodule Neo4j do
     do: {:ok, mutation}
   end
 
-  defp cypher_query(id, query) do
-    matches = query_matches(query, "n")
-    returns = query_returns(query, "n")
-    %{
-      "query" => "MATCH (n) WHERE n.id = {id} #{matches} RETURN {node: {#{returns}}}",
-      "params" => %{ "id" => id }
-     }
+  def cypher_query(id, query) do
+    cypher_request(build_cypher(query, "{id: {id}}"), %{"id" => id})
   end
 
-  defp query_matches(query, subject) do
-    query |> cypher_terms(fn(k, v, i) -> query_match_terms(k, v, subject, i) end, " ")
+  defp build_cypher(query, props) do
+    match_body = match_terms(query, "r")
+    "MATCH (r #{props}) #{match_body} RETURN *"
   end
 
-  defp query_match_terms(_key, value, _subject, _i) when value == true, do: ""
-  defp query_match_terms(key, value, subject, i) when is_map(value) do
-    object = subject <> "_#{i}"
-    "OPTIONAL MATCH (#{subject})-[:#{key}]->(#{object}) " <> query_matches(value, object)
-  end
+  defp match_terms(query, subject) do
+    relationship_keys = query |> Enum.filter(fn {_k, v} -> is_map(v) end) |> Enum.map(fn {k, _} -> k end)
 
-  defp query_returns(query, subject) do
-    query 
-      |> Enum.with_index 
-      |> Enum.map(fn {{k, v}, i} -> query_return_term(k, v, subject, i) end) 
-      |> Enum.concat(["id: #{subject}.id"])
-      |> Enum.join(", ")
-  end
-
-  defp query_return_term(key, value, subject, _i) when value == true, do: "#{key}: #{subject}.#{key}"
-  defp query_return_term(key, value, subject, i) when is_map(value) do
-    object = subject <> "_#{i}"
-    body = query_returns(value, object)
-    "#{key}: { #{body} }"
+    Enum.reduce(relationship_keys, [], fn (k, acc) -> 
+      target = "#{subject}_#{k}"
+      acc ++ ["OPTIONAL MATCH (#{subject})-[_#{target}:#{k}]->(#{target})"] ++ match_terms(query[k], target)
+    end)
   end
 
   defp cypher_mutation(id, ops) do
@@ -81,12 +63,10 @@ defmodule Neo4j do
       "MATCH (n)-[r_out_#{i}:#{r}]->(d_t_#{i} {id: '#{t}'}) DELETE r_out_#{i} " end)
     del_ins  = ops.del.in  |> cypher_terms(fn(r, s, i) ->
       "MATCH (d_s_#{i} {id: '#{s}'})-[r_in_#{i}:#{r}]->(n) DELETE r_in_#{i} " end)
-
     return = "RETURN {node: n}"
-    %{
-      "query" => node <> set_outs <> set_ins <> del_props <> del_outs <> del_ins <> return, 
-      "params" => %{ "id" => id, "props" => ops.props }
-     }
+    
+    cypher_request(node <> set_outs <> set_ins <> del_props <> del_outs <> del_ins <> return, 
+      %{ "id" => id, "props" => ops.props })
   end
 
   defp cypher_terms(query, func, sep \\ " ") do
@@ -94,6 +74,16 @@ defmodule Neo4j do
       |> Enum.with_index
       |> Enum.map(fn {{k, v}, i} -> func.(k, v, i) end)
       |> Enum.join(sep)
+  end
+
+  defp cypher_request(cypher, params) do
+    %{"statements" => [
+      %{
+        "statement" => cypher,
+        "resultDataContents" => ["graph"],
+        "parameters" => params
+      }
+    ]}
   end
 
   defp validate(ops) do
@@ -112,16 +102,23 @@ defmodule Neo4j do
   def invalid_chars?(string), do: !Regex.match?(@valid_id_regex, string)
 
   defp execute({:ok, payload}) do
-    case post("/db/data/cypher", payload) do
-      {:ok, %Response{status_code: code, body: %{"cause" => %{"errors" => err}}}} when code != 200 -> 
-        {:error, Enum.map(err, fn e -> e["message"] end)}
-      {:ok, %Response{status_code: 200, body: %{"data" => data}}} ->
-        {:ok, Enum.map(data, fn d -> hd(d)["node"] end)}
+    case post("/db/data/transaction/commit", payload) do
+      # {:ok, %Response{status_code: code, body: %{"cause" => %{"errors" => err}}}} when code != 200 -> 
+      #   {:error, Enum.map(err, fn e -> e["message"] end)}
+      {:ok, %Response{status_code: 200, body: %{"results" => results}}} ->
+        {:ok, results |> results_graph}
       error = {:error, _} -> error
     end
   end
 
   defp execute(error = {:error, _}), do: error
   defp execute(error = {:error, _, _}), do: error
+
+  defp results_graph(results) do
+    graphs = for result <- results, data <- result["data"], do: data["graph"]
+    Enum.reduce(graphs, %{nodes: [], relationships: []}, fn (g, %{nodes: n, relationships: r}) -> 
+      %{nodes: Enum.uniq(n ++ g["nodes"]), relationships: Enum.uniq(r ++ g["relationships"])} 
+    end)
+  end
 
 end

@@ -19,8 +19,10 @@ defmodule Api.Mixfile do
   defp deps do
   [{:cowboy, "~> 1.0.4"},
    {:httpoison, "~> 0.10.0"},
+   {:atomic_map, "~> 0.8"},
    {:poison, "~> 3.0"},
    {:plug, "~> 1.2.2"},
-   {:uuid, "~> 1.1"}]
+   {:uuid, "~> 1.1"},
+   {:apex, "~>0.7.0"}]
   end
 end

@@ -1,4 +1,6 @@
-%{"certifi": {:hex, :certifi, "0.7.0", "861a57f3808f7eb0c2d1802afeaae0fa5de813b0df0979153cbafcd853ababaf", [:rebar3], []},
+%{"apex": {:hex, :apex, "0.7.0", "9d88f35310873ffd21f677cf9ec9512056e932a749efa544561de740737d3051", [:mix], []},
+  "atomic_map": {:hex, :atomic_map, "0.9.0", "b686f2e3ded1630d6e001fdbef979a1fa654f31334b30c7748f8d4e9e5cc0baf", [:mix], []},
+  "certifi": {:hex, :certifi, "0.7.0", "861a57f3808f7eb0c2d1802afeaae0fa5de813b0df0979153cbafcd853ababaf", [:rebar3], []},
   "cowboy": {:hex, :cowboy, "1.0.4", "a324a8df9f2316c833a470d918aaf73ae894278b8aa6226ce7a9bf699388f878", [:make, :rebar], [{:cowlib, "~> 1.0.0", [hex: :cowlib, optional: false]}, {:ranch, "~> 1.0", [hex: :ranch, optional: false]}]},
   "cowlib": {:hex, :cowlib, "1.0.2", "9d769a1d062c9c3ac753096f868ca121e2730b9a377de23dec0f7e08b1df84ee", [:make], []},
   "elastix": {:hex, :elastix, "0.2.0", "54d6c6721d5f32c952cd23192ea85d4e31325bb656d9209fd795e9390020a9b3", [:mix], [{:httpoison, "~> 0.8", [hex: :httpoison, optional: false]}, {:poison, "~> 1.5 or ~> 2.0", [hex: :poison, optional: false]}]},
