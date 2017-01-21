@@ -87,7 +87,7 @@ defmodule ApiTest do
   test "post with special characters in link returns error" do
     source = post_node()
     resp = call_post("/node", [out: %{ @special_chars => source }])
-    assert resp.status == 400
+    assert resp.status == 500
   end
 
   test "index document with props" do
@@ -99,7 +99,6 @@ defmodule ApiTest do
     assert hit.body == value
   end
 
-  @tag :wip
   test "index document fields" do
     value = unique_text()
     id = post_node(document: %{@test_facet => [field: value]})
