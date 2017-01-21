@@ -59,7 +59,7 @@ defmodule ApiTest do
     source = post_node(out: [to: target], in: [from: target])
     post_graph(%{ source => [del: [out: [to: target], in: [from: target]]] })
     response = query_graph(source, [to: [from: %{}]])
-    assert Map.has_key?(response, :to) == false
+    assert response.to == []
   end
 
   test "delete existing node properties" do
@@ -69,7 +69,6 @@ defmodule ApiTest do
     assert response.delete_me == nil
   end
 
-  @tag :wip
   test "update link between existing nodes" do
     source = post_node()
     target1 = post_node(in: [to: source])

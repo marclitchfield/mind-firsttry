@@ -39,7 +39,7 @@ defmodule Neo4j do
 
   defp build_cypher(query, props) do
     match_body = match_terms(query, "r")
-    "MATCH (r #{props}) #{match_body} RETURN *"
+    "MATCH (r #{props})#{match_body} RETURN *"
   end
 
   defp match_terms(query, subject) do
@@ -47,7 +47,7 @@ defmodule Neo4j do
 
     Enum.reduce(relationship_keys, [], fn (k, acc) -> 
       target = "#{subject}_#{k}"
-      acc ++ ["OPTIONAL MATCH (#{subject})-[_#{target}:#{k}]->(#{target})"] ++ match_terms(query[k], target)
+      acc ++ [" OPTIONAL MATCH (#{subject})-[_#{target}:#{k}]->(#{target})"] ++ match_terms(query[k], target)
     end)
   end
 
