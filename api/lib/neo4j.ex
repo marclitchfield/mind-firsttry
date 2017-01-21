@@ -60,9 +60,9 @@ defmodule Neo4j do
     del_props = ops.del.props |> cypher_terms(fn (p, _, _) ->
       "REMOVE n.#{p} " end)
     del_outs = ops.del.out |> cypher_terms(fn(r, t, i) -> 
-      "MATCH (n)-[r_out_#{i}:#{r}]->(d_t_#{i} {id: '#{t}'}) DELETE r_out_#{i} " end)
+      "WITH n MATCH (n)-[r_out_#{i}:#{r}]->(d_t_#{i} {id: '#{t}'}) DELETE r_out_#{i} " end)
     del_ins  = ops.del.in  |> cypher_terms(fn(r, s, i) ->
-      "MATCH (d_s_#{i} {id: '#{s}'})-[r_in_#{i}:#{r}]->(n) DELETE r_in_#{i} " end)
+      "WITH n MATCH (d_s_#{i} {id: '#{s}'})-[r_in_#{i}:#{r}]->(n) DELETE r_in_#{i} " end)
     return = "RETURN {node: n}"
     
     cypher_request(node <> set_outs <> set_ins <> del_props <> del_outs <> del_ins <> return, 
@@ -103,8 +103,8 @@ defmodule Neo4j do
 
   defp execute({:ok, payload}) do
     case post("/db/data/transaction/commit", payload) do
-      # {:ok, %Response{status_code: code, body: %{"cause" => %{"errors" => err}}}} when code != 200 -> 
-      #   {:error, Enum.map(err, fn e -> e["message"] end)}
+      {:ok, %Response{status_code: 200, body: %{"errors" => errors}}} when length(errors) > 0 ->
+        {:error, Enum.map(errors, fn e -> e["message"] end)}
       {:ok, %Response{status_code: 200, body: %{"results" => results}}} ->
         {:ok, results |> results_graph}
       error = {:error, _} -> error

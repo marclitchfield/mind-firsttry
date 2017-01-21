@@ -69,6 +69,7 @@ defmodule ApiTest do
     assert response.delete_me == nil
   end
 
+  @tag :wip
   test "update link between existing nodes" do
     source = post_node()
     target1 = post_node(in: [to: source])
