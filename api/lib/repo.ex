@@ -33,8 +33,8 @@ defmodule MindRepo do
     do: :ok
   end
 
-  defp graph_response(error = {:error, _}), do: error
-  defp graph_response(error = {:error, _, _}), do: error
+  defp graph_response(error = {:error, _}, _id, _query), do: error
+  defp graph_response(error = {:error, _, _}, _id, _query), do: error
   defp graph_response({:ok, graph}, id, query) do
     root = graph.nodes |> Enum.find(fn n -> n["properties"]["id"] == id end)
     resp = build_response(graph, root, query)

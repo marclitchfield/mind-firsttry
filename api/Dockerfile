@@ -2,6 +2,7 @@ FROM msaraiva/elixir-dev
 
 WORKDIR .
 ADD . .
+RUN mix local.hex --force
 RUN mix deps.get
 RUN mix compile
 
