@@ -99,6 +99,7 @@ defmodule ApiTest do
     assert hit.body == value
   end
 
+  @tag :wip
   test "index document fields" do
     value = unique_text()
     id = post_node(document: %{@test_facet => [field: value]})

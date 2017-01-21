@@ -97,7 +97,7 @@ defmodule MindRepo do
     defaults = %{props: %{}, in: %{}, out: %{}, document: %{}, del: %{
       props: %{}, in: %{}, out: %{}, document: %{}
     }}
-    map = AtomicMap.convert(options, safe: true)
+    map = AtomicMap.convert(options, safe: false, underscore: false)
     MapUtils.deep_merge(defaults, map)
   end
 
