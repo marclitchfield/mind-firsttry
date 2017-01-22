@@ -137,6 +137,18 @@ defmodule ApiTest do
     assert hits == []
   end
 
+  @tag :wip
+  test "delete node" do
+    value = unique_text()
+    id1 = post_node(props: [body: value], document: %{@test_facet => %{}})
+    id2 = post_node(in: [from: id1], out: [to: id1])
+    delete_node(id1)
+    response = query_graph(id2, [to: %{}])
+    assert response.to == []
+    assert query_graph(id1, []) == %{}
+    assert search_graph(@test_facet, [body: value], 0) == []    
+  end
+
   defp post_node(opts \\ []) do
     call_post_assert("/node", opts)
   end
@@ -147,6 +159,10 @@ defmodule ApiTest do
 
   defp post_graph(mutations) do
     call_post_assert("/graph", mutations)
+  end
+
+  defp delete_node(id) do
+    call_delete_assert("/node/#{id}/#{@test_facet}")
   end
 
   defp query_graph(id, query) do
@@ -172,10 +188,20 @@ defmodule ApiTest do
     response.resp_body
   end
 
+  defp call_delete_assert(url) do
+    response = call_delete(url)
+    assert response.status == 200, response.resp_body
+    response.resp_body
+  end
+
   defp call_post(url, payload) do
     conn(:post, url, payload) 
       |> put_req_header("content-type", "application/json")
       |> Router.call(@opts)
+  end
+
+  defp call_delete(url) do
+    conn(:delete, url) |> Router.call(@opts)
   end
 
   defp to_json(body) do

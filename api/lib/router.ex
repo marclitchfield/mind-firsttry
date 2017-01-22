@@ -18,6 +18,10 @@ defmodule MindRouter do
     respond(conn, MindRepo.mutate_node(id, conn.params))
   end
 
+  delete "/node/:id/:facet" do
+    respond(conn, MindRepo.delete_node(id, facet))
+  end
+
   post "/graph" do
     respond(conn, MindRepo.mutate_graph(conn.params))
   end

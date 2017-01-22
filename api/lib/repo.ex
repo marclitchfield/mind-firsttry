@@ -35,8 +35,15 @@ defmodule MindRepo do
     do: :ok
   end
 
+  def delete_node(id, facet) do
+    with {:ok, _} <- Neo4j.delete(id),
+         {:ok, _} <- ElasticSearch.delete(facet, id),
+    do: :ok
+  end
+
   defp graph_response(error = {:error, _}, _id, _query), do: error
   defp graph_response(error = {:error, _, _}, _id, _query), do: error
+  defp graph_response({:ok, %{nodes: nodes, relationships: _}}, _id, _query) when nodes == [], do: {:ok, %{}}
   defp graph_response({:ok, graph}, id, query) do
     root = graph.nodes |> Enum.find(fn n -> n["properties"]["id"] == id end)
     resp = build_response(graph, root, query)
@@ -75,13 +82,13 @@ defmodule MindRepo do
     delete_documents(id, keywords.del)
   end
 
-  defp save_documents(_id, empty, _) when empty == %{}, do: {:ok, :nop}
+  defp save_documents(_id, map, _) when map == %{}, do: {:ok, :nop}
   defp save_documents(id, document, props) do
     document |> parallel_do(fn (facet, source) -> 
       ElasticSearch.index(facet, id, Map.merge(source, props)) end)
   end
 
-  defp delete_documents(_id, empty) when empty == %{}, do: {:ok, :nop}
+  defp delete_documents(_id, map) when map == %{}, do: {:ok, :nop}
   defp delete_documents(id, keywords) do
     keywords.document 
       |> Enum.filter(fn {_, delete} -> delete end)

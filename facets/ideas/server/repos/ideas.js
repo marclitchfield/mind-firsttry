@@ -77,7 +77,7 @@ class IdeasRepo {
 
   deleteIdea(id) {
     return axios
-      .delete(join(config.api_url, `node/${id}`), payload)
+      .delete(join(config.api_url, `node/${id}/${ROOT_SUBJECT}`))
       .then(response => { return 'ok'; })
       .catch(err => err);
   }

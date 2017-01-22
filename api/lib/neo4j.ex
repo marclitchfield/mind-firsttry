@@ -27,13 +27,18 @@ defmodule Neo4j do
     mutation(id, ops) |> execute
   end
 
+  def delete(id) do
+    {:ok, cypher_delete(id)} |> execute
+  end
+
+
   defp mutation(id, ops) do
     with {:ok, valid_ops} <- validate(ops),
          mutation <- cypher_mutation(id, valid_ops),
     do: {:ok, mutation}
   end
 
-  def cypher_query(id, query) do
+  defp cypher_query(id, query) do
     cypher_request(build_cypher(query, "{id: {id}}"), %{"id" => id})
   end
 
@@ -74,6 +79,10 @@ defmodule Neo4j do
       |> Enum.with_index
       |> Enum.map(fn {{k, v}, i} -> func.(k, v, i) end)
       |> Enum.join(sep)
+  end
+
+  defp cypher_delete(id) do
+    cypher_request("MATCH (n {id: {id}}) DETACH DELETE n", %{ "id" => id })
   end
 
   defp cypher_request(cypher, params) do
