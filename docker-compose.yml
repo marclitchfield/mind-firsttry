@@ -7,7 +7,7 @@ services:
     ports:
     - "5000:9000"
     volumes:
-    - apilog:/var/log
+    - ./.log/mind-api:/var/log
     environment:
     - MIND_NEO4J_URL=http://mind-db:7474
     - MIND_SEARCH_URL=http://mind-search:9200
@@ -37,7 +37,7 @@ services:
     environment:
     - NEO4J_AUTH=none
     volumes:
-    - ./data/db:$HOME/neo4j/data
+    - ./.data/mind-db:$HOME/neo4j/data
 volumes:
   apilog: {}
   datavolume: {}

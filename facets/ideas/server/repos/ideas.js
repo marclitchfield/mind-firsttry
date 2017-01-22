@@ -19,9 +19,9 @@ class IdeasRepo {
         [P.ROOT]: queryProperties() 
       })
       .then(response => {
-        console.log('response', response);
         return [].concat(response.data[P.ROOT] || []).map((idea) => toIdea(idea));
-      });
+      })
+      .catch(err => err);
   }
 
   getIdea(id) {
@@ -29,7 +29,8 @@ class IdeasRepo {
       .post(join(config.api_url, "query", id), queryProperties())
       .then(response => {
         return toIdea(response.data);
-      });
+      })
+      .catch(err => err);
   }
 
   createIdea(idea, parent) {
