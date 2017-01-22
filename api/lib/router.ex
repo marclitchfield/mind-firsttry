@@ -1,9 +1,8 @@
 defmodule MindRouter do
   use Plug.Router
-  require Logger
 
   plug Plug.Parsers, parsers: [:json], json_decoder: Poison
-  plug Plug.Logger
+  plug Logster.Plugs.Logger
   plug :match
   plug :dispatch
 

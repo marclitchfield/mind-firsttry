@@ -26,17 +26,17 @@ export function fetchIdea(id) {
   }
 }
 
-export function createRootIdea(idea) {
+export function createRootIdea({ body }) {
   return {
     type: "CREATE_ROOT_IDEA",
-    payload: axios.post("/api/ideas", { body: idea.body }).then(response => response.data)
+    payload: axios.post("/api/ideas", { body }).then(response => response.data)
   }  
 }
 
-export function createIdea(idea, parent, type) {
+export function createIdea({body, type}, parent) {
   return {
     type: "CREATE_IDEA",
-    payload: axios.post(`/api/ideas/${parent}/${type}`, { body: idea.body }).then(response => response.data)
+    payload: axios.post(`/api/ideas/${parent}`, { body, type }).then(response => response.data)
   }
 }
 

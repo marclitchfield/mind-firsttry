@@ -5,7 +5,8 @@ import { SUPPORTED_TYPES, ROOT_TYPE } from "../../app/constants";
 
 const P = {
   PARENT: "idea_parent",
-  CHILD: "idea_child"
+  CHILD: "idea_child",
+  ROOT: "idea_root"
 };
 
 const ROOT_SUBJECT = "ideas_facet";
@@ -15,29 +16,28 @@ class IdeasRepo {
   getIdeas() {
     return axios
       .post(join(config.api_url, "query", ROOT_SUBJECT), { 
-        [P.CHILD]: queryProperties({ children: false, parents: false }) 
+        [P.ROOT]: queryProperties() 
       })
       .then(response => {
         console.log('response', response);
-        return [].concat(response.data[P.CHILD] || []).map((idea) => toIdea(idea));
+        return [].concat(response.data[P.ROOT] || []).map((idea) => toIdea(idea));
       });
   }
 
   getIdea(id) {
     return axios
-      .post(join(config.api_url, "query", id), queryProperties({ children: true, parents: true }))
+      .post(join(config.api_url, "query", id), queryProperties())
       .then(response => {
         return toIdea(response.data);
       });
   }
 
-  createIdea(idea, parent, type) {
-    const ideaType = type || ROOT_TYPE;
-    const subject = parent === undefined ? ROOT_SUBJECT : parent;
+  createIdea(idea, parent) {
+    const ideaType = parent === undefined ? ROOT_TYPE : idea.type;
     const payload = {
       props: { body: idea.body },
-      out: { [P.PARENT]: subject, is: ideaType },
-      in: { [P.CHILD]: subject },
+      out: Object.assign({}, { is: ideaType }, parent === undefined ? {} : { [P.PARENT]: parent }),
+      in: Object.assign({}, parent === undefined ? { [P.ROOT]: ROOT_SUBJECT } : { [P.CHILD]: parent }),
       document: { 
         [ROOT_SUBJECT]: {
           type: ideaType,
@@ -47,15 +47,15 @@ class IdeasRepo {
     };
     return axios
       .post(join(config.api_url, "node"), payload)
-      .then(response => Object.assign({}, payload.props, { id: response.data, type: ideaType }))
+      .then(response => Object.assign({}, payload.props, { id: response.data, type: ideaType, body: idea.body }))
       .catch(err => err)
   }
 
   updateIdea(idea) {
     const payload = {
       props: { body: idea.body },
-      out: idea._original.type === idea.type ? {} : { is: idea.type },
-      del: idea._original.type === idea.type ? {} : { out: { is: idea._original.type } },
+      out: idea._original === undefined || idea._original.type === idea.type ? {} : { is: idea.type },
+      del: idea._original === undefined || idea._original.type === idea.type ? {} : { out: { is: idea._original.type } },
       document: {
         [ROOT_SUBJECT]: {
           type: idea.type,
@@ -106,30 +106,31 @@ class IdeasRepo {
   }
 }
 
-function queryProperties({ children, parents }) {
+function queryProperties() {
   const node = { 
-    [P.IS]: {},
-    [P.CREATED]: true
+    is: {},
+    created: true
   };
   const body = {
-    [P.BODY]: true
+    body: true
   };
-  const nodeChildren = { 
-    [P.CHILD]: children ? Object.assign({}, node, body, { [P.CHILD]: node }) : node
+  const children = { 
+    [P.CHILD]: Object.assign({}, node, body, { [P.CHILD]: node })
   };
-  const nodeParents = parents ? {
+  const parents = {
     [P.PARENT]: Object.assign({}, node, body, { [P.CHILD]: node })
-  } : {};
+  };
 
-  return Object.assign({}, node, body, nodeChildren, nodeParents);
+  return Object.assign({}, node, body, children, parents);
 }
 
 function toIdea(ideaResponse) {
+  console.log('toIdea', ideaResponse)
   return {
     id: ideaResponse.id,
-    body: ideaResponse[P.BODY],
-    type: ideaResponse[P.IS] !== undefined ? ideaResponse[P.IS][0].id : ROOT_TYPE,
-    created: ideaResponse[P.CREATED],
+    body: ideaResponse.body,
+    type: ideaResponse.is !== undefined ? ideaResponse.is[0].id : ROOT_TYPE,
+    created: ideaResponse.created,
     children: (ideaResponse[P.CHILD] || []).map(c => toIdea(c)),
     parents: (ideaResponse[P.PARENT] || []).filter(p => p.id !== undefined).map(p => toIdea(p))
   };

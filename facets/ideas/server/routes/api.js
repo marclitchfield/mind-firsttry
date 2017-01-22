@@ -11,8 +11,8 @@ router.get("/ideas/:id", (req, res) => {
   res.json(ideasRepo.getIdea(req.params.id));
 });
 
-router.post("/ideas/:id?/:predicate?", (req, res) => {
-  res.json(ideasRepo.createIdea(req.body, req.params.id, req.params.predicate));
+router.post("/ideas/:id?", (req, res) => {
+  res.json(ideasRepo.createIdea(req.body, req.params.id));
 });
 
 router.delete("/idea/:id", (req, res) => {

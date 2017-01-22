@@ -130,7 +130,7 @@ export default class SelectedIdea extends React.Component {
   }
 
   handleCreateSubmitted(newIdea) {
-    this.props.actions.createIdea(newIdea, this.props.selectedIdea.id, newIdea.type)
+    this.props.actions.createIdea(newIdea, this.props.selectedIdea.id)
       .then(() => this.props.actions.updateIdea(this.props.selectedIdea))
       .then(() => this.transitionTo(`/idea/${this.props.selectedIdea.id}`));
   }

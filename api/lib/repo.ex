@@ -3,7 +3,9 @@ defmodule MindRepo do
   @created_pred "created"
 
   def query_graph(id, query) do
-    Neo4j.query(id, query) |> graph_response(id, query)
+    response = Neo4j.query(id, query) |> graph_response(id, query)
+    IO.inspect {:query_response, response}
+    response
   end
 
   def search_graph(facet, query) do
